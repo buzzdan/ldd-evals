@@ -12,6 +12,8 @@ vars:
   # Optional glob over case names, forwarded as --case.
   CASE: '{{.CASE | default ""}}'
   CASE_FLAG: '{{if .CASE}}--case {{.CASE | shellQuote}}{{end}}'
+  # RESUME=1 reuses every run under OUT/<TIER> that already has a result.json.
+  RESUME_FLAG: '{{if .RESUME}}--resume{{end}}'
   EVALS_DIR: '{{.PLUGIN}}/evals'
 
 tasks:
@@ -32,12 +34,12 @@ tasks:
       - bash go/gen-review-graders.sh go/violations.yaml go/cases/review-full/graders
 
   run:
-    desc: Run one tier (TIER, CAP, MODEL, OUT, CASE) against PLUGIN. Spends money.
+    desc: Run one tier (TIER, CAP, MODEL, OUT, CASE, RESUME) against PLUGIN. Spends money.
     deps: [':build', cases]
     cmds:
       - >-
         bin/ldd-eval run --tag {{.TIER}} --model {{.MODEL}} --max-cost-usd {{.CAP}}
-        --keep-temp --plugin-dir {{.PLUGIN}} --out {{.OUT}}/{{.TIER}} {{.CASE_FLAG}} {{.EVALS_DIR}}
+        --keep-temp --plugin-dir {{.PLUGIN}} --out {{.OUT}}/{{.TIER}} {{.CASE_FLAG}} {{.RESUME_FLAG}} {{.EVALS_DIR}}
 
   regrade:
     desc: Re-apply the current graders to the traces under OUT/<TIER>. Free except llm judges.
