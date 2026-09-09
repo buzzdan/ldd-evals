@@ -1,0 +1,57 @@
+---
+type: architecture
+description: the two repositories, the dependency direction, how a run and a baseline flow through this one
+---
+# Architecture
+
+Two repositories share the work. `buzzdan/ai-coding-rules` holds the plugins
+users install and the documentation of how they are measured. This repository
+holds everything that measures: the runner, one suite per language, and the
+recorded baselines. It depends on the plugin repository; the plugin repository
+never depends on it.
+
+## Why two repositories
+
+A plugin marketplace clones the whole plugin repository, history included, and
+installing copies the plugin directory. Fixtures, traces and baselines would
+ride along into every install and grow with every language. Keeping them here
+keeps a plugin clone at about 2 MB.
+
+## The contract
+
+- **The pin.** Every baseline README and `aggregate-result.json` records the
+  plugin commit and version the run measured. A local run records the plugin
+  checkout's HEAD; CI checks out the plugin repository at a given ref first.
+- **The copy.** The built-in `claude plugin eval` gate expects cases below the
+  plugin directory. The `go:cases` task copies the suite into `<plugin>/evals/`,
+  a path the plugin repository ignores, so nothing is committed or shipped there.
+- **The hand-off.** The plugin repository's `scripts/evals.sh` clones this
+  repository into an ignored `.evals/` directory and calls `task go:run` with
+  `PLUGIN` set to its own plugin directory.
+- **Baseline naming.** `baselines/<lang>-<plugin version>-<plugin sha7>/`. One
+  directory per plugin state that becomes a reference.
+- **Manifest ids.** `<lang>/violations.yaml` lists the planted violations and
+  controls. The same id set is meant to appear in every language with
+  language-specific anchors.
+
+## A run
+
+`task go:run TIER=<tier> CAP=<usd> PLUGIN=<plugin dir>` builds the runner,
+copies the suite below the plugin, and runs `ldd-eval run` with the model pinned
+and the cost cap set. Results land in `results/go-<timestamp>/<tier>/` with one
+`result.json` and `trace.jsonl` per case run and one `aggregate-result.json`
+per tier.
+
+## A baseline
+
+`task go:baseline OUT=<run dir> PLUGIN=<plugin dir>` promotes a run: it copies
+the verdicts, archives every trace into one `traces.tar.zst`, and writes a
+README stub with the pass-rate table pre-filled. `task go:regrade OUT=<baseline>
+TIER=<tier>` re-applies the current graders to the recorded traces after the
+archive is unpacked beside the verdicts. Graders that read the scaffold tree
+report "needs the kept scaffold" from a clone, because scaffolds are not
+committed.
+
+The mechanism itself, the fixture, how to write a case and how to compare a
+run against a baseline are documented in the plugin repository under
+[docs/](https://github.com/buzzdan/ai-coding-rules/blob/main/docs/index.md).

@@ -1,0 +1,52 @@
+version: '3'
+
+# The Go suite. Paths are relative to the repository root, where task runs.
+# OUT names a run directory; each tier writes to OUT/<tier> so one directory
+# can hold a cheap and a medium run side by side, which is how a baseline is
+# laid out.
+
+vars:
+  TIER: '{{.TIER | default "cheap"}}'
+  CAP: '{{.CAP | default "60"}}'
+  OUT: '{{.OUT | default (now | date "20060102-150405" | printf "results/go-%s")}}'
+  # Optional glob over case names, forwarded as --case.
+  CASE: '{{.CASE | default ""}}'
+  CASE_FLAG: '{{if .CASE}}--case {{.CASE | shellQuote}}{{end}}'
+  EVALS_DIR: '{{.PLUGIN}}/evals'
+
+tasks:
+  cases:
+    desc: Copy the suite into <plugin>/evals (ignored there) so cases sit below the plugin
+    cmds:
+      - mkdir -p {{.EVALS_DIR}}
+      - rsync -a --delete --exclude=/README.md go/cases/ go/scaffold go/postcheck go/fixture {{.EVALS_DIR}}/
+
+  manifest:
+    desc: Check violations.yaml against the fixture
+    cmds:
+      - bash go/check-manifest.sh go/violations.yaml go/fixture/go-mini
+
+  graders:
+    desc: Regenerate the review-full recall, cluster and precision graders from the manifest
+    cmds:
+      - bash go/gen-review-graders.sh go/violations.yaml go/cases/review-full/graders
+
+  run:
+    desc: Run one tier (TIER, CAP, MODEL, OUT, CASE) against PLUGIN. Spends money.
+    deps: [':build', cases]
+    cmds:
+      - >-
+        bin/ldd-eval run --tag {{.TIER}} --model {{.MODEL}} --max-cost-usd {{.CAP}}
+        --keep-temp --plugin-dir {{.PLUGIN}} --out {{.OUT}}/{{.TIER}} {{.CASE_FLAG}} {{.EVALS_DIR}}
+
+  regrade:
+    desc: Re-apply the current graders to the traces under OUT/<TIER>. Free except llm judges.
+    deps: [':build', cases]
+    cmds:
+      - >-
+        bin/ldd-eval regrade --tag {{.TIER}} --out {{.OUT}}/{{.TIER}} {{.CASE_FLAG}} {{.EVALS_DIR}}
+
+  baseline:
+    desc: Promote the run under OUT to baselines/go-<plugin version>-<plugin sha>
+    cmds:
+      - bash scripts/promote-baseline.sh {{.OUT}} {{.PLUGIN}}
