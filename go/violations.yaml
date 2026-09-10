@@ -28,8 +28,13 @@
 #                       generated; default: not mentioned.
 # A plant with a review cluster may carry one more:
 #   cluster_match: '<ERE>'  replaces the generated cluster grader's default
-#                       pattern (CLUSTER.*<anchor>) when reports spell the
-#                       cluster in more than one way.
+#                       pattern (the word "cluster", then the anchor or its
+#                       last dotted segment on the same line) when reports
+#                       spell the cluster in more than one way.
+# A plant with expect.review may carry:
+#   recall_match: '<ERE>'   replaces the generated recall grader's basename
+#                       pattern for the plant's file set when reports name
+#                       the plant another way (env.Config for env.go).
 #
 # Line-oriented on purpose: `files:` is a one-line flow list, `anchor:` is one
 # single-quoted line, and the parsers only read id / rule / control / files /
@@ -1355,6 +1360,8 @@
   questions: [Q1]
   files: [internal/env/env.go]
   anchor: '^var Config Configuration'
+  # Reports name this plant by its symbol as often as by its file.
+  recall_match: 'env\.go|env\.Config'
   expect:
     review:   { category: "🔴", fix: "Extract Clean Island", nolint_finding: true }
     refactor: { gone: '^var ', count_max: 0, scope: 'internal/env/', present: 'func Load\(\) \(\w+, error\)' }

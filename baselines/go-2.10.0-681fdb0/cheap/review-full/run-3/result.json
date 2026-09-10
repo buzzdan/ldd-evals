@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Alert\\.Channel over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Device\\.Status over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Device over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Job\\.Kind over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*ProcessHeartbeat over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": true,
-      "detail": "judge claude-haiku-4-5: **Question 1: Is the unguarded concurrent map write listed under 🐛 Bugs?**\n\nYES. Finding #3 in the Bugs section explicitly describes it: \"`internal/services/device_service.go:571-576` `flushLoop`... **no lock** while deleting from `s.lastSeen` — a map written elsewhere (line 218, `ProcessHeartbeat`) with no lock... This is a live, unguarded concurrent-map-access hazard (`fatal error: concurrent map writes`)\". This matches the criteria precisely (lastSeen map, ProcessHeartbeat writer, flush goroutine reader, no guard).\n\n**Question 2: Are production time.Sleep calls listed under 🔴 Design Debt (not Bugs)?**\n\nYES. The Design Debt section, R10 — Concurrency Safety, states: \"five separate `time.Sleep` retry/backoff sites (`retry.go:40,52`, `device_service.go:181`, `sync_service.go:122`) ignore caller cancellation\". These are exactly the retry backoff sites mentioned in the criteria, and they appear in Design Debt, not Bugs.\n\nBoth questions pass.\n\nVERDICT: PASS",
-      "cost_usd": 0.0108097
+      "detail": "judge claude-haiku-4-5: Looking at the report against the RUBRIC questions:\n\n**Question 1:** Is the unguarded concurrent map write listed under 🐛 Bugs?\n\nYes. In the 🐛 BUGS section, item 3 explicitly describes the `flushLoop` unguarded concurrent-map-access hazard: \"a goroutine spawned in `NewDeviceService`... with no lock while deleting from `s.lastSeen` — a map written elsewhere (line 218, `ProcessHeartbeat`) with no lock...\" This is clearly the concurrent map write issue, correctly filed under Bugs, not Design Debt.\n\n**Question 2:** Is the production `time.Sleep` (retry backoff) listed under 🔴 Design Debt rather than 🐛 Bugs?\n\nYes. Under 🔴 DESIGN DEBT, the R10 — Concurrency Safety section lists \"five separate `time.Sleep` retry/backoff sites (`retry.go:40,52`, `device_service.go:181`, `sync_service.go:122`)\" as ignoring caller cancellation. These production sleeps are filed under Design Debt, not Bugs. The `time.Sleep(50ms)` mentioned incidentally in the flushLoop bug description is not treated as a separate design-debt issue—it's incidental to the primary concurrent-map-access bug.\n\nBoth criteria are satisfied.\n\nVERDICT: PASS",
+      "cost_usd": 0.027512
     },
     {
       "name": "no-edit",
@@ -273,7 +273,7 @@
       "name": "recall-CASE-F.env-config-global",
       "type": "regex",
       "passed": true,
-      "detail": "env\\.go over last_message: 1 match(es); want at least 1"
+      "detail": "env\\.go|env\\.Config over last_message: 2 match(es); want at least 1"
     },
     {
       "name": "recall-CASE-F.test-mutates-global",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 10.3447203,
-  "judge_cost_usd": 0.0108097,
+  "judge_cost_usd": 0.027512,
   "duration_ms": 1138198,
   "num_turns": 82,
   "segments": 2

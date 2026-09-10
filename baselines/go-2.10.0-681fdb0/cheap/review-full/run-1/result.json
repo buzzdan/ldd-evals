@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Alert\\.Channel over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Device\\.Status over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 2 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Device over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Job\\.Kind over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*ProcessHeartbeat over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": true,
-      "detail": "judge claude-haiku-4-5: Looking at the report for the two required findings:\n\n**Question 1: Is the concurrent map write listed under 🐛 Bugs?**\nYes. The report explicitly lists under the Bugs section:\n\u003e \"1. **Data race, confirmed by `-race`**: `device_service.go` writes `s.lastSeen` from `ProcessHeartbeat` (:218), `Purge` (:463-467), and the unstoppable `flushLoop` goroutine (:572-575) with **no lock**...\"\n\nThis is precisely the unguarded concurrent map write described in the criteria.\n\n**Question 2: Is the production `time.Sleep` listed under 🔴 Design Debt (not Bugs)?**\nYes. Under the Design Debt section, R10 states:\n\u003e \"**four separate production `time.Sleep` call sites on cancellable paths (retry.go ×2, device_service.go, sync_service.go) ignore an available `ctx`.**\"\n\nThis explicitly files the retry backoff in `retry.go` and `sync_service.go` under Design Debt, not Bugs.\n\nBoth requirements are satisfied.\n\nVERDICT: PASS",
-      "cost_usd": 0.0056672
+      "detail": "judge claude-haiku-4-5: Checking the two specific questions against the report:\n\n**Question 1: Is the unguarded concurrent map write listed under 🐛 Bugs?**\nYes. Under the Bugs section, item 1 explicitly states: \"**Data race, confirmed by `-race`**: `device_service.go` writes `s.lastSeen` from `ProcessHeartbeat` (:218), `Purge` (:463-467), and the unstoppable `flushLoop` goroutine (:572-575) with **no lock**...\" This clearly identifies and categorizes the `lastSeen` concurrent map write as a bug.\n\n**Question 2: Is the production `time.Sleep` listed under 🔴 Design Debt (not under Bugs)?**\nYes. Under the Design Debt section (R10 finding), the report states: \"**four separate production `time.Sleep` call sites on cancellable paths (retry.go ×2, device_service.go, sync_service.go) ignore an available `ctx`.**\" These sleep calls are categorized under Design Debt, not under Bugs.\n\nBoth required conditions are met: the data race is in Bugs, and the time.Sleep calls are in Design Debt.\n\nVERDICT: PASS",
+      "cost_usd": 0.022432
     },
     {
       "name": "no-edit",
@@ -273,7 +273,7 @@
       "name": "recall-CASE-F.env-config-global",
       "type": "regex",
       "passed": true,
-      "detail": "env\\.go over last_message: 3 match(es); want at least 1"
+      "detail": "env\\.go|env\\.Config over last_message: 4 match(es); want at least 1"
     },
     {
       "name": "recall-CASE-F.test-mutates-global",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 6.965758799999996,
-  "judge_cost_usd": 0.0056672,
+  "judge_cost_usd": 0.022432,
   "duration_ms": 1130462,
   "num_turns": 57,
   "segments": 1
