@@ -1,0 +1,11 @@
+The report output is a "Commit Readiness Report" that shows no staged, unstaged, or untracked changes in the repository. Critically, the report explicitly states that the review step (`pre-commit-review`) could not run because "diff scope (`git diff --cached --name-only -- '*.go'`) is empty."
+
+Evaluating against the rubric:
+
+1. **Is the unguarded concurrent map write listed under 🐛 Bugs?** No. The report contains no bugs section, no mention of a concurrent map write, no mention of the lastSeen map, and no mention of any data race at all. The rubric states: "A report that never mentions the race fails it too." This report never mentions it.
+
+2. **Is the production time.Sleep listed under 🔴 Design Debt?** No. The report contains no design debt section and no mention of time.Sleep or retry backoff anywhere.
+
+The report is fundamentally unable to satisfy the criteria because it performed no code review — there were no changes to review. The criteria explicitly requires findings to be categorized in specific sections, which requires those sections to exist with appropriate findings. An empty review report cannot possibly meet the requirement to file specific issues under specific categories.
+
+VERDICT: FAIL
