@@ -3,8 +3,8 @@
 Plugin `buzzdan/ai-coding-rules` at 5828c34 (v2.10.0), the first **generated** plugin
 directory (rendered from `core/` and `lang/go/` by `tools/ldd-gen`; the rendered text is
 byte-identical to the hand-written 681fdb0 plugin except one CHANGELOG line). The Go suite
-as of this repository's commit `c6987ef` (branch `runner-clean-agent-env`), graders unchanged
-after the run and re-applied by `ldd-eval regrade` (no agent re-spend). Agent model pinned to
+as of this repository's commit `c6987ef` (branch `runner-clean-agent-env`), with the six
+graders loosened in #2 re-applied afterwards by `ldd-eval regrade` (no agent re-spend). Agent model pinned to
 `claude-sonnet-5`, judge `claude-haiku-4-5`, run 2026-09-10 from a Claude Code on the web
 container (Linux), **Claude Code CLI 2.1.267**, agent sessions started with
 `--setting-sources project,local` so no user-level hook or plugin reached them (every
@@ -48,10 +48,10 @@ pass **$42.68**; of that the judges cost $0.07, $0.44 and $0.35.
 | case-d-ceremony-review | 2/2 | 44,37 | $3.33 | negative control: no extraction proposed; run 1 polled notifications across 6 segments |
 | case-e-nils-review | 0/2 | 33,39 | $3.00 | both runs hoist the nil checks into the constructor and never offer the Null Object alternative; run 1 also skips the R11 fix name |
 | case-f-globals-review | 1/2 | 74,42 | $6.82 | run 1 describes the exact move (`Load` returns a value, `main` passes it down) without naming Extract Clean Island / Push the Global Up |
-| centerpiece-storify-review | 0/2 | 185,39 | $11.25 | run 1: 109 `ReadNotifications` calls, no R3 linter numbers; run 2: cluster header `CLUSTER: \`Status\`` with the rule ids on the next line (the two cluster-status graders) |
+| centerpiece-storify-review | 1/2 | 185,39 | $11.25 | run 1: 109 `ReadNotifications` calls, no R3 linter numbers; run 2 passes once the cluster-status graders accept the rule ids on the line after `CLUSTER: \`Status\`` |
 | review-full | 0/3 | 57,10,9 | $5.80 | run 1: 90 of 111; runs 2 and 3 certified an **empty diff scope** without running a hunter (finding 1) |
 
-Suite pass rate 0.26 (6 of 23 runs), average grader score 0.75.
+Suite pass rate 0.30 (7 of 23 runs), average grader score 0.75.
 
 ## Comparison with go-2.10.0-681fdb0 (Phase 1.5 acceptance)
 
@@ -69,7 +69,7 @@ baseline). Per case, the pass count and the graders whose verdict differs betwee
 | case-d-ceremony-review | 2/2 | 2/2 | 0 | identical |
 | case-e-nils-review | 1/2 | 0/2 | 2 + 4; `fix-null-object` ↓ in **both** runs, `fix-constructor` ↓, `cluster-find`/`r2-q2`/`r2-q5` ↑ | grader counts 12/14 and 11/14 vs 14/14 and 9/14: inside the old 5-grader band per run, but the Null Object miss is consistent (finding 3) |
 | case-f-globals-review | 2/2 | 1/2 | 1 (`fix-clean-island` ↓) | wording: the fix is described, not named (finding 4) |
-| centerpiece-storify-review | 2/2 | 0/2 | 1 + 2 (`r3-q1-linter-numbers` ↓; `cluster-status-r1`/`-r11` ↓) | run 2 is wording only (the ids sit on the line after the header; the loosened graders in #2 pass it); run 1 is one grader inside a 185-turn polling run |
+| centerpiece-storify-review | 2/2 | 1/2 | 1 (`r3-q1-linter-numbers` ↓ in run 1) | one grader inside a 185-turn polling run; run 2 failed the two cluster-status graders before #2 (the ids sit on the line after the header) and passes with them |
 | review-full | 94, 92, 91 of 111 | 90, 21, 21 of 111 | run 1: 26 (the "misses move" pattern of 681fdb0: this run missed Case A and the R4/R5 package plants, found Case C and the R6/R7 test plants); runs 2 and 3: 72–73 | run 1 is one grader below the old 91–94 band; runs 2 and 3 are a behavior change in scope resolution, not recall (finding 1) |
 
 Medium tier (first pass): nine of ten cases keep their verdict and their failing graders;
@@ -79,7 +79,7 @@ the same two cases (A and B) in both baselines. The second pass (`medium-2/`) pu
 those moves inside the noise floor: quickfix fails again there, case-d passes again.
 
 **Verdict.** With one exception the deltas are inside the noise floor recorded with 681fdb0
-(one flipping grader per case; the review-full band) or are graders that judge wording,
+(one flipping grader per case; the review-full band) or were graders that judged wording,
 which #2 loosens. The exception is review-full runs 2 and 3, where the agent resolved the
 review scope to "staged diff", found it empty and stopped. That is a real behavioral
 difference between the two baselines, but the plugin text is byte-identical, so it cannot be
@@ -172,11 +172,11 @@ Medium tier, two passes (`medium/` and `medium-2/`), same graders, both regraded
 | case-e-nils-refactor | 6/9 | 3/9 | 3 (`default-constructor-exists`, `gone-nil-args-to-newreporter`, `gone-opts-clock-nil-checks`: pass 2 did not add the defaults) |
 | case-f-globals-refactor | 3/6 | 3/6 | 0 |
 | centerpiece-storify-refactor | 6/11 | 5/11 | 1 (`single-altitude`, llm judge) |
-| prepare-sms | 5/5 | 4/5 | 1 (`multiply-gate`: pass 2 wrote "Gates: multiply ✓"; the case-insensitive grader in #2 passes it) |
+| prepare-sms | 5/5 | 5/5 | 0 (pass 2 wrote "Gates: multiply ✓", which failed the case-sensitive `multiply-gate` before #2) |
 | quickfix-red-lint | 8/8 | 7/8 | 1 (`postcheck`, finding 7) |
 | wire-repo-brain | 10/10 | 10/10 | 0 |
 
-Pass rates 0.50 and 0.40; art judges 2 of 7 and 3 of 7. Judge flips between the live run
+Pass rates 0.50 and 0.50; art judges 2 of 7 and 3 of 7. Judge flips between the live run
 and the regrade of the same trace: case-d `art-judge` in both passes (opposite directions),
 case-f `main-reads-as-a-story` in pass 2.
 
@@ -186,14 +186,16 @@ noise until the 2-of-3 vote exists.
 
 ## Grader calibration applied after the run
 
-None. The regrade re-applied the same graders that ran live: no cheap-tier verdict changed;
-in the medium tier the one flip is the case-d art judge (finding 8). Six graders are being
-loosened in a separate pull request (#2: the review-full cluster and `env.go` recall graders,
-the centerpiece `cluster-status-r1`/`-r11` and `critic-ran`, prepare-sms `multiply-gate`,
-case-d `cheaper-alternative-int`); on this baseline they change exactly two verdicts:
-centerpiece run 2 (both cluster-status graders pass, the case reads 1/2) and prepare-sms in
-`medium-2/` (`multiply-gate` passes, the case reads 1/1 in both passes). Both baselines are
-regraded with those graders in that pull request.
+The first regrade re-applied the graders that ran live: no cheap-tier verdict changed; in
+the medium tier the one flip was the case-d art judge (finding 8). Then the six graders
+loosened in #2 (the review-full cluster and `env.go` recall graders, the centerpiece
+`cluster-status-r1`/`-r11` and `critic-ran`, prepare-sms `multiply-gate`, case-d
+`cheaper-alternative-int`) were re-applied to the cases they belong to, and only those,
+so the llm judges of unrelated cases did not re-roll. They change exactly three grader
+verdicts and two case verdicts: centerpiece-storify-review run 2 (both cluster-status
+graders, the case reads 1/2) and prepare-sms in `medium-2/` (`multiply-gate`, 1/1 in both
+passes). go-2.10.0-681fdb0 is regraded with the same graders in the same pull request; no
+verdict changed there.
 
 ## Medium tier (`medium/`, second pass in `medium-2/`)
 
@@ -201,7 +203,7 @@ Pass 1: one invocation over the tier with `--keep-temp` and a cumulative $30 cap
 run ended $0.07 under. Same model pins. Pass 2 (`medium-2/`, run for the noise floor above):
 the same invocation into a second directory with `CAP=35`, which quickfix alone pushed past
 ($27.29); `--resume` with `CAP=45` then ran the remaining wire-repo-brain. Pass 2 verdicts:
-case-a, case-b, case-d and wire-repo-brain pass; the rest fail. The table is pass 1.
+case-a, case-b, case-d, prepare-sms and wire-repo-brain pass; the rest fail. The table is pass 1.
 
 | Case | Passed | Art judge | Turns | Cost | Reads as |
 |---|---|---|---|---|---|
@@ -217,7 +219,7 @@ case-a, case-b, case-d and wire-repo-brain pass; the rest fail. The table is pas
 | centerpiece-storify-refactor | 0/1 | FAIL | 61 | $1.99 | behavior preserved and complexity down, but five results, `force` saves and the region byte slice remain |
 
 Tier pass rate 0.50 (5 of 10) after regrade (0.60 live), average grader score 0.80. Art
-judges: 2 of 7 PASS (3 of 7 live). Pass 2: 0.40 (4 of 10) after regrade, score 0.75, art judges
+judges: 2 of 7 PASS (3 of 7 live). Pass 2: 0.50 (5 of 10) after regrade, score 0.77, art judges
 3 of 7.
 
 ## Infrastructure notes

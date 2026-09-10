@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Alert\\.Channel over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Device\\.Status over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Device over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Job\\.Kind over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*ProcessHeartbeat over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": false,
-      "detail": "judge claude-haiku-4-5: The report provides no findings at all. It documents that the review was skipped entirely because the working tree is clean with no staged changes, so no diff existed for the review agents to analyze. \n\nUnder the rubric's evaluation criteria:\n1. **Question 1 (unguarded concurrent map write under 🐛 Bugs):** The report never mentions the race condition. The rubric explicitly states \"A report that never mentions the race fails it too.\"\n2. **Question 2 (production time.Sleep under 🔴 Design Debt):** The report never mentions time.Sleep or retry backoff issues.\n\nThe report makes clear why nothing was reviewed (\"diff scope is staged changes; none exist\"), but that doesn't satisfy the criteria—both required findings must be present in the report and properly categorized. The absence of these findings means both questions fail.\n\nVERDICT: FAIL",
-      "cost_usd": 0.0038791999999999997
+      "detail": "judge claude-haiku-4-5: **Reasoning:**\n\nThe FOCUS text is a commit readreadiness report that states: \"skipped spawning review agents since their default scope (staged changes) is empty.\" No actual code review was performed, and therefore no report with categorized bugs and design debt findings exists.\n\nThe RUBRIC requires me to answer two questions from the report text:\n1. Is the concurrent map write (`lastSeen`) listed under the 🐛 Bugs section?\n2. Is the production `time.Sleep` listed under the 🔴 Design Debt section?\n\nThe FOCUS text contains neither finding. The concurrent map write is not mentioned anywhere, and the `time.Sleep` is not mentioned anywhere. Since both questions must be answered yes to pass, and both are clearly \"no,\" this fails.\n\nVERDICT: FAIL",
+      "cost_usd": 0.004715900000000001
     },
     {
       "name": "no-edit",
@@ -273,7 +273,7 @@
       "name": "recall-CASE-F.env-config-global",
       "type": "regex",
       "passed": false,
-      "detail": "env\\.go over last_message: 0 match(es); want at least 1"
+      "detail": "env\\.go|env\\.Config over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "recall-CASE-F.test-mutates-global",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 0.1344452,
-  "judge_cost_usd": 0.0038791999999999997,
+  "judge_cost_usd": 0.004715900000000001,
   "duration_ms": 35343,
   "num_turns": 9,
   "segments": 1,

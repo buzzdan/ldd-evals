@@ -8,7 +8,7 @@
       "name": "cheaper-alternative-int",
       "type": "regex",
       "passed": true,
-      "detail": "(?i)keep (the )?(plain |bare |raw )?int|delete the wrapper|remove the wrapper|drop the wrapper|plain int|bare int|unwrap over last_message: 1 match(es); want at least 1"
+      "detail": "(?i)(keep|use|prefer)( the| a| an)?( plain| bare| raw)? `?\\bint\\b|(delete|remove|drop)( the| both| these| those| all| unused| its| this| ceremony| no-op| trivial| wrapper)* wrappers?\\b|plain int|bare int|unwrap over last_message: 3 match(es); want at least 1"
     },
     {
       "name": "evidence-protocol",
@@ -74,12 +74,12 @@
       "name": "traceid-refuted-if-proposed",
       "type": "llm",
       "passed": true,
-      "detail": "judge claude-haiku-4-5: Reading the report against the criteria:\n\nThe 🔴 Design Debt section proposes deletions of two ceremony types (`ReplicaCount`, `Name`) and a fix for the `Grants.All()` slice-alias leak. There is **no TraceID type proposed anywhere** as a Design Debt finding.\n\nThe report explicitly states: \"Skeptic not invoked — no new-type extraction was proposed (both R1 findings recommend *deleting* existing ceremony types, not adding new ones).\"\n\nThe only mention of `traceID` is in prose within the Readability Debt section (the `trace.go:22` comment rewrite), which correctly describes the parameter's pass-through behavior (\"echoes the request's X-Trace header\") — this is acceptable per the rubric as a note, not a domain-type proposal.\n\nVERDICT: PASS",
-      "cost_usd": 0.015652
+      "detail": "judge claude-haiku-4-5: ## Analysis\n\nThe report explicitly states: \"Skeptic not invoked — no new-type extraction was proposed (both R1 findings recommend *deleting* existing ceremony types, not adding new ones).\"\n\nThe three 🔴 Design Debt findings are:\n1. `ReplicaCount` type → delete it\n2. `Name` type → delete it  \n3. `Grants.All()` slice mutation → copy on return\n\nNone of these involve creating a `TraceID` domain type. The report proposes zero new domain type extractions. The mention of `traceID` parameter appears only in prose (within a suggested comment rewrite in the Readability Debt section), which the rubric explicitly permits (\"Mentions of the parameter `traceID` in prose or in a 🟢 Polish / BROADER CONTEXT note are fine\").\n\nVERDICT: PASS",
+      "cost_usd": 0.0052546
     }
   ],
   "cost_usd": 1.4367081,
-  "judge_cost_usd": 0.015652,
+  "judge_cost_usd": 0.0052546,
   "duration_ms": 443796,
   "num_turns": 37,
   "segments": 1,

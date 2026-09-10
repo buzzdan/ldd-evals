@@ -2,13 +2,13 @@
   "case": "prepare-sms",
   "run": 1,
   "model": "claude-sonnet-5",
-  "passed": false,
+  "passed": true,
   "graders": [
     {
       "name": "multiply-gate",
       "type": "regex",
-      "passed": false,
-      "detail": "MULTIPLY over last_message: 0 match(es); want at least 1"
+      "passed": true,
+      "detail": "(?i)\\bMULTIPL|\\b(new|fourth|4th|another|extra|additional) (case|arm|branch)\\b[^\\n]{0,100}\\bswitch|\\bswitch(es)?\\b[^\\n]{0,100}\\b(new|fourth|4th|another|extra|additional) (case|arm|branch)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "preparation-log",

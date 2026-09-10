@@ -1,9 +1,12 @@
-Reading the report against the criteria:
-
-The 🔴 Design Debt section proposes deletions of two ceremony types (`ReplicaCount`, `Name`) and a fix for the `Grants.All()` slice-alias leak. There is **no TraceID type proposed anywhere** as a Design Debt finding.
+## Analysis
 
 The report explicitly states: "Skeptic not invoked — no new-type extraction was proposed (both R1 findings recommend *deleting* existing ceremony types, not adding new ones)."
 
-The only mention of `traceID` is in prose within the Readability Debt section (the `trace.go:22` comment rewrite), which correctly describes the parameter's pass-through behavior ("echoes the request's X-Trace header") — this is acceptable per the rubric as a note, not a domain-type proposal.
+The three 🔴 Design Debt findings are:
+1. `ReplicaCount` type → delete it
+2. `Name` type → delete it  
+3. `Grants.All()` slice mutation → copy on return
+
+None of these involve creating a `TraceID` domain type. The report proposes zero new domain type extractions. The mention of `traceID` parameter appears only in prose (within a suggested comment rewrite in the Readability Debt section), which the rubric explicitly permits ("Mentions of the parameter `traceID` in prose or in a 🟢 Polish / BROADER CONTEXT note are fine").
 
 VERDICT: PASS
