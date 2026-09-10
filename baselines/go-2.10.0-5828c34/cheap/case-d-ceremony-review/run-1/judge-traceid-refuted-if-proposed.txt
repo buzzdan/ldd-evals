@@ -1,0 +1,10 @@
+Reading the report for any Design Debt findings proposing a TraceID (or equivalent) domain type:
+
+The **🔴 Design Debt** section identifies three findings:
+1. `ReplicaCount`/`Name` ceremony wrappers (proposed fix: delete, use plain `int`/`string`)
+2. `Grants.All()` slice aliasing (proposed fix: clone the slice)
+3. Package naming role violation (repo-wide, advisory)
+
+None of these findings propose creating a `TraceID` type. The report mentions the file `trace.go` and references the `traceID` parameter in the broader context note ("a pass-through raw string used once..."), but makes no design debt proposal to wrap it in a domain type. The report correctly recognizes this as a simple pass-through parameter that needs no ceremony.
+
+**VERDICT: PASS**
