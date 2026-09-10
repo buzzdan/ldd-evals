@@ -42,6 +42,7 @@ assert() {
 # assert_le <description> <actual> <max>
 assert_le() {
 	local desc=$1 actual=${2:-} max=$3
+	actual=${actual//[[:space:]]/} # BSD wc pads its counts with spaces
 	if [[ "$actual" =~ ^-?[0-9]+$ ]] && ((actual <= max)); then
 		echo "PASS  $desc ($actual <= $max)"
 	else
@@ -53,6 +54,7 @@ assert_le() {
 # assert_ge <description> <actual> <min>
 assert_ge() {
 	local desc=$1 actual=${2:-} min=$3
+	actual=${actual//[[:space:]]/} # BSD wc pads its counts with spaces
 	if [[ "$actual" =~ ^-?[0-9]+$ ]] && ((actual >= min)); then
 		echo "PASS  $desc ($actual >= $min)"
 	else
@@ -64,6 +66,7 @@ assert_ge() {
 # assert_eq <description> <actual> <expected>
 assert_eq() {
 	local desc=$1 actual=${2:-} expected=$3
+	actual=${actual//[[:space:]]/} # BSD wc pads its counts with spaces
 	if [[ "$actual" == "$expected" ]]; then
 		echo "PASS  $desc ($actual)"
 	else
