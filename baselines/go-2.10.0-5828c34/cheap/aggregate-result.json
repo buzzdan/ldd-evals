@@ -613,7 +613,7 @@
               "name": "cheaper-alternative-int",
               "type": "regex",
               "passed": true,
-              "detail": "(?i)keep (the )?(plain |bare |raw )?int|delete the wrapper|remove the wrapper|drop the wrapper|plain int|bare int|unwrap over last_message: 1 match(es); want at least 1"
+              "detail": "(?i)(keep|use|prefer)( the| a| an)?( plain| bare| raw)? `?\\bint\\b|(delete|remove|drop)( the| both| these| those| all| unused| its| this| ceremony| no-op| trivial| wrapper)* wrappers?\\b|plain int|bare int|unwrap over last_message: 3 match(es); want at least 1"
             },
             {
               "name": "evidence-protocol",
@@ -679,12 +679,12 @@
               "name": "traceid-refuted-if-proposed",
               "type": "llm",
               "passed": true,
-              "detail": "judge claude-haiku-4-5: Reading the report for any Design Debt findings proposing a TraceID (or equivalent) domain type:\n\nThe **🔴 Design Debt** section identifies three findings:\n1. `ReplicaCount`/`Name` ceremony wrappers (proposed fix: delete, use plain `int`/`string`)\n2. `Grants.All()` slice aliasing (proposed fix: clone the slice)\n3. Package naming role violation (repo-wide, advisory)\n\nNone of these findings propose creating a `TraceID` type. The report mentions the file `trace.go` and references the `traceID` parameter in the broader context note (\"a pass-through raw string used once...\"), but makes no design debt proposal to wrap it in a domain type. The report correctly recognizes this as a simple pass-through parameter that needs no ceremony.\n\n**VERDICT: PASS**",
-              "cost_usd": 0.017387
+              "detail": "judge claude-haiku-4-5: Reading through the report systematically:\n\nThe **Design Debt** section lists three findings:\n1. `ReplicaCount` and `Name` ceremony wrappers (R1)\n2. `Grants.All()` aliasing issue (R12)\n3. Package naming layering (R5)\n\nThe **Readability Debt** section addresses comments only.\n\nThe **Broader context** notes dead code references but no proposed type creation.\n\n**Critically:** There is no `TraceID` type (or equivalent) proposed anywhere as a Design Debt finding or as a Replace Primitive with Domain Type extraction. The `trace.go` file is reviewed (comment cleanup suggestions, function documentation improvements), but no domain type is proposed for the traceID parameter.\n\nThe report correctly recognizes that traceID is a pass-through raw string parameter copied into the X-Trace header once — it doesn't warrant its own domain type. This matches the criteria.\n\nVERDICT: PASS",
+              "cost_usd": 0.0047671
             }
           ],
           "cost_usd": 1.8923920000000003,
-          "judge_cost_usd": 0.017387,
+          "judge_cost_usd": 0.0047671,
           "duration_ms": 371891,
           "num_turns": 44,
           "segments": 6,
@@ -700,7 +700,7 @@
               "name": "cheaper-alternative-int",
               "type": "regex",
               "passed": true,
-              "detail": "(?i)keep (the )?(plain |bare |raw )?int|delete the wrapper|remove the wrapper|drop the wrapper|plain int|bare int|unwrap over last_message: 1 match(es); want at least 1"
+              "detail": "(?i)(keep|use|prefer)( the| a| an)?( plain| bare| raw)? `?\\bint\\b|(delete|remove|drop)( the| both| these| those| all| unused| its| this| ceremony| no-op| trivial| wrapper)* wrappers?\\b|plain int|bare int|unwrap over last_message: 3 match(es); want at least 1"
             },
             {
               "name": "evidence-protocol",
@@ -766,12 +766,12 @@
               "name": "traceid-refuted-if-proposed",
               "type": "llm",
               "passed": true,
-              "detail": "judge claude-haiku-4-5: Reading the report against the criteria:\n\nThe 🔴 Design Debt section proposes deletions of two ceremony types (`ReplicaCount`, `Name`) and a fix for the `Grants.All()` slice-alias leak. There is **no TraceID type proposed anywhere** as a Design Debt finding.\n\nThe report explicitly states: \"Skeptic not invoked — no new-type extraction was proposed (both R1 findings recommend *deleting* existing ceremony types, not adding new ones).\"\n\nThe only mention of `traceID` is in prose within the Readability Debt section (the `trace.go:22` comment rewrite), which correctly describes the parameter's pass-through behavior (\"echoes the request's X-Trace header\") — this is acceptable per the rubric as a note, not a domain-type proposal.\n\nVERDICT: PASS",
-              "cost_usd": 0.015652
+              "detail": "judge claude-haiku-4-5: ## Analysis\n\nThe report explicitly states: \"Skeptic not invoked — no new-type extraction was proposed (both R1 findings recommend *deleting* existing ceremony types, not adding new ones).\"\n\nThe three 🔴 Design Debt findings are:\n1. `ReplicaCount` type → delete it\n2. `Name` type → delete it  \n3. `Grants.All()` slice mutation → copy on return\n\nNone of these involve creating a `TraceID` domain type. The report proposes zero new domain type extractions. The mention of `traceID` parameter appears only in prose (within a suggested comment rewrite in the Readability Debt section), which the rubric explicitly permits (\"Mentions of the parameter `traceID` in prose or in a 🟢 Polish / BROADER CONTEXT note are fine\").\n\nVERDICT: PASS",
+              "cost_usd": 0.0052546
             }
           ],
           "cost_usd": 1.4367081,
-          "judge_cost_usd": 0.015652,
+          "judge_cost_usd": 0.0052546,
           "duration_ms": 443796,
           "num_turns": 37,
           "segments": 1,
@@ -1184,7 +1184,7 @@
               "name": "refuted-carries-alternative",
               "type": "llm",
               "passed": true,
-              "detail": "judge claude-haiku-4-5: # Analysis\n\nLooking at the FOCUS text for any wrapper type proposals regarding worker count:\n\n**Worker count handling:**\n- The report identifies `env.Config.NumWorkers` being read as a global from `internal/pool/workers.go:18`\n- Proposed fix: `Start(jobs \u003c-chan Job, numWorkers int)` — passing `numWorkers` directly as an `int` parameter to a constructor\n- No wrapper type (like `type WorkerCount int` or `type NumWorkers struct{...}`) is proposed anywhere\n\n**Batch size handling:**\n- Similarly, `env.Config.BatchSize` is flagged\n- Proposed fix: `NewScheduler(batchSize int)` — also a direct parameter, no wrapper type\n\n**What the skeptic did address:**\n- The handlers map wrapping: REFUTED wrapping in a `Dispatcher/Registry` type (score 0-1) with a concrete cheaper alternative (constructor injection onto Scheduler)\n- But this is about the job-handlers map, not worker count\n\nThe RUBRIC explicitly states: \"If the report proposes NO wrapper type for the worker count / batch size, PASS.\" Since all proposals here use primitive `int` parameters rather than introducing a new wrapper type, the criterion is satisfied without requiring skeptic confirmation.\n\nVERDICT: PASS",
+              "detail": "judge claude-haiku-4-5: # Analysis\n\nLooking at the FOCUS text for any wrapper type proposals regarding worker count:\n\n**Worker count handling:**\n- The report identifies `env.Config.NumWorkers` being read as a global from `internal/pool/workers.go:18`\n- Proposed fix: `Start(jobs <-chan Job, numWorkers int)` — passing `numWorkers` directly as an `int` parameter to a constructor\n- No wrapper type (like `type WorkerCount int` or `type NumWorkers struct{...}`) is proposed anywhere\n\n**Batch size handling:**\n- Similarly, `env.Config.BatchSize` is flagged\n- Proposed fix: `NewScheduler(batchSize int)` — also a direct parameter, no wrapper type\n\n**What the skeptic did address:**\n- The handlers map wrapping: REFUTED wrapping in a `Dispatcher/Registry` type (score 0-1) with a concrete cheaper alternative (constructor injection onto Scheduler)\n- But this is about the job-handlers map, not worker count\n\nThe RUBRIC explicitly states: \"If the report proposes NO wrapper type for the worker count / batch size, PASS.\" Since all proposals here use primitive `int` parameters rather than introducing a new wrapper type, the criterion is satisfied without requiring skeptic confirmation.\n\nVERDICT: PASS",
               "cost_usd": 0.0064104
             },
             {
@@ -1213,8 +1213,8 @@
         "centerpiece"
       ],
       "runs": 2,
-      "passed": 0,
-      "passRate": 0,
+      "passed": 1,
+      "passRate": 0.5,
       "results": [
         {
           "case": "centerpiece-storify-review",
@@ -1226,19 +1226,19 @@
               "name": "cluster-status-r1",
               "type": "regex",
               "passed": true,
-              "detail": "(?i)\\bcluster\\b[^\\n]*[Ss]tatus.*\\bR1\\b over last_message: 1 match(es); want at least 1"
+              "detail": "(?is)\\bcluster\\b[^\\n]*status.{0,500}\\bR1\\b over last_message: 2 match(es); want at least 1"
             },
             {
               "name": "cluster-status-r11",
               "type": "regex",
               "passed": true,
-              "detail": "(?i)\\bcluster\\b[^\\n]*[Ss]tatus.*\\bR11\\b over last_message: 1 match(es); want at least 1"
+              "detail": "(?is)\\bcluster\\b[^\\n]*status.{0,500}\\bR11\\b over last_message: 1 match(es); want at least 1"
             },
             {
               "name": "critic-ran",
               "type": "regex",
               "passed": true,
-              "detail": "(?i)comment-critic|Critic: over last_message: 4 match(es); want at least 1"
+              "detail": "(?i)\\bcritic\\b over last_message: 4 match(es); want at least 1"
             },
             {
               "name": "evidence-protocol",
@@ -1306,25 +1306,25 @@
           "case": "centerpiece-storify-review",
           "run": 2,
           "model": "claude-sonnet-5",
-          "passed": false,
+          "passed": true,
           "graders": [
             {
               "name": "cluster-status-r1",
               "type": "regex",
-              "passed": false,
-              "detail": "(?i)\\bcluster\\b[^\\n]*[Ss]tatus.*\\bR1\\b over last_message: 0 match(es); want at least 1"
+              "passed": true,
+              "detail": "(?is)\\bcluster\\b[^\\n]*status.{0,500}\\bR1\\b over last_message: 1 match(es); want at least 1"
             },
             {
               "name": "cluster-status-r11",
               "type": "regex",
-              "passed": false,
-              "detail": "(?i)\\bcluster\\b[^\\n]*[Ss]tatus.*\\bR11\\b over last_message: 0 match(es); want at least 1"
+              "passed": true,
+              "detail": "(?is)\\bcluster\\b[^\\n]*status.{0,500}\\bR11\\b over last_message: 1 match(es); want at least 1"
             },
             {
               "name": "critic-ran",
               "type": "regex",
               "passed": true,
-              "detail": "(?i)comment-critic|Critic: over last_message: 2 match(es); want at least 1"
+              "detail": "(?i)\\bcritic\\b over last_message: 3 match(es); want at least 1"
             },
             {
               "name": "evidence-protocol",
@@ -1417,49 +1417,49 @@
               "name": "cluster-alert-channel",
               "type": "regex",
               "passed": true,
-              "detail": "CLUSTER.*Alert\\.Channel over last_message: 1 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 1 match(es); want at least 1"
             },
             {
               "name": "cluster-catalog-find",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-device-status",
               "type": "regex",
               "passed": true,
-              "detail": "CLUSTER.*Device\\.Status over last_message: 1 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 1 match(es); want at least 1"
             },
             {
               "name": "cluster-device",
               "type": "regex",
               "passed": true,
-              "detail": "CLUSTER.*Device over last_message: 1 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 1 match(es); want at least 1"
             },
             {
               "name": "cluster-job-kind",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Job\\.Kind over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-processheartbeat",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*ProcessHeartbeat over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-reporter",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-retention",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-role-packages",
@@ -1477,14 +1477,14 @@
               "name": "hunters-spawned",
               "type": "tool_used",
               "passed": true,
-              "detail": "Agent(rule-hunter) called 13 time(s); want \u003e= 3"
+              "detail": "Agent(rule-hunter) called 13 time(s); want >= 3"
             },
             {
               "name": "judge-categories",
               "type": "llm",
               "passed": true,
-              "detail": "judge claude-haiku-4-5: Looking at the commit-readiness report:\n\n**Question 1 — Unguarded concurrent map write under 🐛 Bugs?**\n\nYes. The report explicitly lists under **🐛 BUGS** (item 1):\n\u003e \"`internal/services/device_service.go` — `s.lastSeen` map is written from `ProcessHeartbeat` (line 218), `Purge` (463-467), and the unlocked `flushLoop` (568-578) with **no mutex held on 3 of 4 paths** — a real `fatal error: concurrent map` crash risk.\"\n\nThis is the exact race condition on the `lastSeen` map, correctly categorized as a bug.\n\n**Question 2 — Production time.Sleep under 🔴 Design Debt (not Bugs)?**\n\nYes. Under **🔴 DESIGN DEBT**, the R10 finding explicitly lists:\n\u003e \"production `time.Sleep` (uncancellable backoff) in `retry.go`, `device_service.go`'s down-notification retry, and `sync_service.go`'s save-retry\"\n\nThe production `time.Sleep` calls are here in Design Debt, not in the Bugs section (which lists only 4 distinct bugs, none of which are the `time.Sleep` calls).\n\nBoth criteria are satisfied.\n\nVERDICT: PASS",
-              "cost_usd": 0.0054846
+              "detail": "judge claude-haiku-4-5: Looking at the FOCUS text against the two specific criteria:\n\n**Question 1:** Is the unguarded concurrent map write listed under 🐛 Bugs?\nYes. Under the 🐛 BUGS section, Bug #1 clearly states: \"`internal/services/device_service.go` — `s.lastSeen` map is written from `ProcessHeartbeat` (line 218), `Purge` (463-467), and the unlocked `flushLoop` (568-578) with **no mutex held on 3 of 4 paths** — a real `fatal error: concurrent map` crash risk.\"\n\n**Question 2:** Is the production `time.Sleep` listed under 🔴 Design Debt (not Bugs)?\nYes. Under 🔴 DESIGN DEBT, R10 explicitly lists: \"production `time.Sleep` (uncancellable backoff) in `retry.go`, `device_service.go`'s down-notification retry, and `sync_service.go`'s save-retry\" as a design debt finding.\n\nBoth questions are answered affirmatively. The report correctly categorizes the concurrent map write as a runtime bug and the time.Sleep calls as design debt.\n\nVERDICT: PASS",
+              "cost_usd": 0.005651300000000001
             },
             {
               "name": "no-edit",
@@ -1550,7 +1550,7 @@
               "name": "precision-CTRL.R11.value-conditional",
               "type": "regex",
               "passed": true,
-              "detail": "w\\.start \u003c w\\.end over last_message: 0 match(es); want 0"
+              "detail": "w\\.start < w\\.end over last_message: 0 match(es); want 0"
             },
             {
               "name": "precision-CTRL.R12.honest-mutator",
@@ -1676,7 +1676,7 @@
               "name": "recall-CASE-F.env-config-global",
               "type": "regex",
               "passed": true,
-              "detail": "env\\.go over last_message: 2 match(es); want at least 1"
+              "detail": "env\\.go|env\\.Config over last_message: 2 match(es); want at least 1"
             },
             {
               "name": "recall-CASE-F.test-mutates-global",
@@ -2076,7 +2076,7 @@
             }
           ],
           "cost_usd": 5.520410099999999,
-          "judge_cost_usd": 0.0054846,
+          "judge_cost_usd": 0.005651300000000001,
           "duration_ms": 918560,
           "num_turns": 57,
           "segments": 3,
@@ -2098,49 +2098,49 @@
               "name": "cluster-alert-channel",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Alert\\.Channel over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-catalog-find",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-device-status",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Device\\.Status over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-device",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Device over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-job-kind",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Job\\.Kind over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-processheartbeat",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*ProcessHeartbeat over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-reporter",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-retention",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-role-packages",
@@ -2158,14 +2158,14 @@
               "name": "hunters-spawned",
               "type": "tool_used",
               "passed": false,
-              "detail": "Agent(rule-hunter) called 0 time(s); want \u003e= 3"
+              "detail": "Agent(rule-hunter) called 0 time(s); want >= 3"
             },
             {
               "name": "judge-categories",
               "type": "llm",
               "passed": false,
-              "detail": "judge claude-haiku-4-5: The report output is a \"Commit Readiness Report\" that shows no staged, unstaged, or untracked changes in the repository. Critically, the report explicitly states that the review step (`pre-commit-review`) could not run because \"diff scope (`git diff --cached --name-only -- '*.go'`) is empty.\"\n\nEvaluating against the rubric:\n\n1. **Is the unguarded concurrent map write listed under 🐛 Bugs?** No. The report contains no bugs section, no mention of a concurrent map write, no mention of the lastSeen map, and no mention of any data race at all. The rubric states: \"A report that never mentions the race fails it too.\" This report never mentions it.\n\n2. **Is the production time.Sleep listed under 🔴 Design Debt?** No. The report contains no design debt section and no mention of time.Sleep or retry backoff anywhere.\n\nThe report is fundamentally unable to satisfy the criteria because it performed no code review — there were no changes to review. The criteria explicitly requires findings to be categorized in specific sections, which requires those sections to exist with appropriate findings. An empty review report cannot possibly meet the requirement to file specific issues under specific categories.\n\nVERDICT: FAIL",
-              "cost_usd": 0.0053366
+              "detail": "judge claude-haiku-4-5: The report contains no findings whatsoever. It explicitly states that the diff scope is empty (no staged/unstaged/untracked changes), so \"no rule-hunters, skeptic, or comment-critic had anything to run against. No findings possible with zero diff scope.\"\n\nConsequently:\n\n1. **The unguarded concurrent map write is not listed under 🐛 Bugs** (or anywhere else) — the report contains no bug findings\n2. **The production time.Sleep is not listed under 🔴 Design Debt** (or anywhere else) — the report contains no design debt findings\n\nBoth required conditions must be met to pass. Since the report has zero findings and makes no mention of either the concurrent map write or the time.Sleep calls, it fails to satisfy the criteria.\n\nVERDICT: FAIL",
+              "cost_usd": 0.0045333000000000005
             },
             {
               "name": "no-edit",
@@ -2231,7 +2231,7 @@
               "name": "precision-CTRL.R11.value-conditional",
               "type": "regex",
               "passed": true,
-              "detail": "w\\.start \u003c w\\.end over last_message: 0 match(es); want 0"
+              "detail": "w\\.start < w\\.end over last_message: 0 match(es); want 0"
             },
             {
               "name": "precision-CTRL.R12.honest-mutator",
@@ -2357,7 +2357,7 @@
               "name": "recall-CASE-F.env-config-global",
               "type": "regex",
               "passed": false,
-              "detail": "env\\.go over last_message: 0 match(es); want at least 1"
+              "detail": "env\\.go|env\\.Config over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "recall-CASE-F.test-mutates-global",
@@ -2757,7 +2757,7 @@
             }
           ],
           "cost_usd": 0.1436438,
-          "judge_cost_usd": 0.0053366,
+          "judge_cost_usd": 0.0045333000000000005,
           "duration_ms": 38681,
           "num_turns": 10,
           "segments": 1,
@@ -2779,49 +2779,49 @@
               "name": "cluster-alert-channel",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Alert\\.Channel over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-catalog-find",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-device-status",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Device\\.Status over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-device",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Device over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-job-kind",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Job\\.Kind over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-processheartbeat",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*ProcessHeartbeat over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-reporter",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-retention",
               "type": "regex",
               "passed": false,
-              "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+              "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "cluster-role-packages",
@@ -2839,14 +2839,14 @@
               "name": "hunters-spawned",
               "type": "tool_used",
               "passed": false,
-              "detail": "Agent(rule-hunter) called 0 time(s); want \u003e= 3"
+              "detail": "Agent(rule-hunter) called 0 time(s); want >= 3"
             },
             {
               "name": "judge-categories",
               "type": "llm",
               "passed": false,
-              "detail": "judge claude-haiku-4-5: The report provides no findings at all. It documents that the review was skipped entirely because the working tree is clean with no staged changes, so no diff existed for the review agents to analyze. \n\nUnder the rubric's evaluation criteria:\n1. **Question 1 (unguarded concurrent map write under 🐛 Bugs):** The report never mentions the race condition. The rubric explicitly states \"A report that never mentions the race fails it too.\"\n2. **Question 2 (production time.Sleep under 🔴 Design Debt):** The report never mentions time.Sleep or retry backoff issues.\n\nThe report makes clear why nothing was reviewed (\"diff scope is staged changes; none exist\"), but that doesn't satisfy the criteria—both required findings must be present in the report and properly categorized. The absence of these findings means both questions fail.\n\nVERDICT: FAIL",
-              "cost_usd": 0.0038791999999999997
+              "detail": "judge claude-haiku-4-5: **Reasoning:**\n\nThe FOCUS text is a commit readreadiness report that states: \"skipped spawning review agents since their default scope (staged changes) is empty.\" No actual code review was performed, and therefore no report with categorized bugs and design debt findings exists.\n\nThe RUBRIC requires me to answer two questions from the report text:\n1. Is the concurrent map write (`lastSeen`) listed under the 🐛 Bugs section?\n2. Is the production `time.Sleep` listed under the 🔴 Design Debt section?\n\nThe FOCUS text contains neither finding. The concurrent map write is not mentioned anywhere, and the `time.Sleep` is not mentioned anywhere. Since both questions must be answered yes to pass, and both are clearly \"no,\" this fails.\n\nVERDICT: FAIL",
+              "cost_usd": 0.004715900000000001
             },
             {
               "name": "no-edit",
@@ -2912,7 +2912,7 @@
               "name": "precision-CTRL.R11.value-conditional",
               "type": "regex",
               "passed": true,
-              "detail": "w\\.start \u003c w\\.end over last_message: 0 match(es); want 0"
+              "detail": "w\\.start < w\\.end over last_message: 0 match(es); want 0"
             },
             {
               "name": "precision-CTRL.R12.honest-mutator",
@@ -3038,7 +3038,7 @@
               "name": "recall-CASE-F.env-config-global",
               "type": "regex",
               "passed": false,
-              "detail": "env\\.go over last_message: 0 match(es); want at least 1"
+              "detail": "env\\.go|env\\.Config over last_message: 0 match(es); want at least 1"
             },
             {
               "name": "recall-CASE-F.test-mutates-global",
@@ -3438,7 +3438,7 @@
             }
           ],
           "cost_usd": 0.1344452,
-          "judge_cost_usd": 0.0038791999999999997,
+          "judge_cost_usd": 0.004715900000000001,
           "duration_ms": 35343,
           "num_turns": 9,
           "segments": 1,
@@ -3473,7 +3473,7 @@
               "name": "skill-invoked",
               "type": "tool_used",
               "passed": false,
-              "detail": "Skill([:\"]linter-driven-development\") called 0 time(s); want \u003e= 1"
+              "detail": "Skill([:\"]linter-driven-development\") called 0 time(s); want >= 1"
             },
             {
               "name": "stopped-after-preflight",
@@ -3505,7 +3505,7 @@
               "name": "skill-invoked",
               "type": "tool_used",
               "passed": false,
-              "detail": "Skill([:\"]linter-driven-development\") called 0 time(s); want \u003e= 1"
+              "detail": "Skill([:\"]linter-driven-development\") called 0 time(s); want >= 1"
             },
             {
               "name": "stopped-after-preflight",
@@ -3537,7 +3537,7 @@
               "name": "skill-invoked",
               "type": "tool_used",
               "passed": false,
-              "detail": "Skill([:\"]linter-driven-development\") called 0 time(s); want \u003e= 1"
+              "detail": "Skill([:\"]linter-driven-development\") called 0 time(s); want >= 1"
             },
             {
               "name": "stopped-after-preflight",
@@ -3648,8 +3648,8 @@
     }
   ],
   "aggregates": {
-    "passRate": 0.2608695652173913,
-    "averageScore": 0.7465040051996575,
-    "totalCostUSD": 39.71629510000001
+    "passRate": 0.30434782608695654,
+    "averageScore": 0.7537503820112517,
+    "totalCostUSD": 39.693477900000005
   }
 }

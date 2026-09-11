@@ -1,19 +1,11 @@
-Looking at the commit-readiness report:
+Looking at the FOCUS text against the two specific criteria:
 
-**Question 1 — Unguarded concurrent map write under 🐛 Bugs?**
+**Question 1:** Is the unguarded concurrent map write listed under 🐛 Bugs?
+Yes. Under the 🐛 BUGS section, Bug #1 clearly states: "`internal/services/device_service.go` — `s.lastSeen` map is written from `ProcessHeartbeat` (line 218), `Purge` (463-467), and the unlocked `flushLoop` (568-578) with **no mutex held on 3 of 4 paths** — a real `fatal error: concurrent map` crash risk."
 
-Yes. The report explicitly lists under **🐛 BUGS** (item 1):
-> "`internal/services/device_service.go` — `s.lastSeen` map is written from `ProcessHeartbeat` (line 218), `Purge` (463-467), and the unlocked `flushLoop` (568-578) with **no mutex held on 3 of 4 paths** — a real `fatal error: concurrent map` crash risk."
+**Question 2:** Is the production `time.Sleep` listed under 🔴 Design Debt (not Bugs)?
+Yes. Under 🔴 DESIGN DEBT, R10 explicitly lists: "production `time.Sleep` (uncancellable backoff) in `retry.go`, `device_service.go`'s down-notification retry, and `sync_service.go`'s save-retry" as a design debt finding.
 
-This is the exact race condition on the `lastSeen` map, correctly categorized as a bug.
-
-**Question 2 — Production time.Sleep under 🔴 Design Debt (not Bugs)?**
-
-Yes. Under **🔴 DESIGN DEBT**, the R10 finding explicitly lists:
-> "production `time.Sleep` (uncancellable backoff) in `retry.go`, `device_service.go`'s down-notification retry, and `sync_service.go`'s save-retry"
-
-The production `time.Sleep` calls are here in Design Debt, not in the Bugs section (which lists only 4 distinct bugs, none of which are the `time.Sleep` calls).
-
-Both criteria are satisfied.
+Both questions are answered affirmatively. The report correctly categorizes the concurrent map write as a runtime bug and the time.Sleep calls as design debt.
 
 VERDICT: PASS

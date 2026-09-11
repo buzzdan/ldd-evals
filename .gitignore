@@ -3,3 +3,6 @@ bin/
 **/fixture/*/bin/
 .task/
 .DS_Store
+# traces are archived in traces.tar.zst; unpacked copies and macOS AppleDouble files stay local
+baselines/**/trace.jsonl
+**/._*

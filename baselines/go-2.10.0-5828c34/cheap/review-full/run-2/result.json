@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Alert\\.Channel over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Device\\.Status over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Device over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Job\\.Kind over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*ProcessHeartbeat over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": false,
-      "detail": "judge claude-haiku-4-5: The report output is a \"Commit Readiness Report\" that shows no staged, unstaged, or untracked changes in the repository. Critically, the report explicitly states that the review step (`pre-commit-review`) could not run because \"diff scope (`git diff --cached --name-only -- '*.go'`) is empty.\"\n\nEvaluating against the rubric:\n\n1. **Is the unguarded concurrent map write listed under 🐛 Bugs?** No. The report contains no bugs section, no mention of a concurrent map write, no mention of the lastSeen map, and no mention of any data race at all. The rubric states: \"A report that never mentions the race fails it too.\" This report never mentions it.\n\n2. **Is the production time.Sleep listed under 🔴 Design Debt?** No. The report contains no design debt section and no mention of time.Sleep or retry backoff anywhere.\n\nThe report is fundamentally unable to satisfy the criteria because it performed no code review — there were no changes to review. The criteria explicitly requires findings to be categorized in specific sections, which requires those sections to exist with appropriate findings. An empty review report cannot possibly meet the requirement to file specific issues under specific categories.\n\nVERDICT: FAIL",
-      "cost_usd": 0.0053366
+      "detail": "judge claude-haiku-4-5: The report contains no findings whatsoever. It explicitly states that the diff scope is empty (no staged/unstaged/untracked changes), so \"no rule-hunters, skeptic, or comment-critic had anything to run against. No findings possible with zero diff scope.\"\n\nConsequently:\n\n1. **The unguarded concurrent map write is not listed under 🐛 Bugs** (or anywhere else) — the report contains no bug findings\n2. **The production time.Sleep is not listed under 🔴 Design Debt** (or anywhere else) — the report contains no design debt findings\n\nBoth required conditions must be met to pass. Since the report has zero findings and makes no mention of either the concurrent map write or the time.Sleep calls, it fails to satisfy the criteria.\n\nVERDICT: FAIL",
+      "cost_usd": 0.0045333000000000005
     },
     {
       "name": "no-edit",
@@ -273,7 +273,7 @@
       "name": "recall-CASE-F.env-config-global",
       "type": "regex",
       "passed": false,
-      "detail": "env\\.go over last_message: 0 match(es); want at least 1"
+      "detail": "env\\.go|env\\.Config over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "recall-CASE-F.test-mutates-global",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 0.1436438,
-  "judge_cost_usd": 0.0053366,
+  "judge_cost_usd": 0.0045333000000000005,
   "duration_ms": 38681,
   "num_turns": 10,
   "segments": 1,

@@ -8,7 +8,7 @@
       "name": "cheaper-alternative-int",
       "type": "regex",
       "passed": true,
-      "detail": "(?i)keep (the )?(plain |bare |raw )?int|delete the wrapper|remove the wrapper|drop the wrapper|plain int|bare int|unwrap over last_message: 1 match(es); want at least 1"
+      "detail": "(?i)(keep|use|prefer)( the| a| an)?( plain| bare| raw)? `?\\bint\\b|(delete|remove|drop)( the| both| these| those| all| unused| its| this| ceremony| no-op| trivial| wrapper)* wrappers?\\b|plain int|bare int|unwrap over last_message: 3 match(es); want at least 1"
     },
     {
       "name": "evidence-protocol",
@@ -74,12 +74,12 @@
       "name": "traceid-refuted-if-proposed",
       "type": "llm",
       "passed": true,
-      "detail": "judge claude-haiku-4-5: Reading the report for any Design Debt findings proposing a TraceID (or equivalent) domain type:\n\nThe **🔴 Design Debt** section identifies three findings:\n1. `ReplicaCount`/`Name` ceremony wrappers (proposed fix: delete, use plain `int`/`string`)\n2. `Grants.All()` slice aliasing (proposed fix: clone the slice)\n3. Package naming role violation (repo-wide, advisory)\n\nNone of these findings propose creating a `TraceID` type. The report mentions the file `trace.go` and references the `traceID` parameter in the broader context note (\"a pass-through raw string used once...\"), but makes no design debt proposal to wrap it in a domain type. The report correctly recognizes this as a simple pass-through parameter that needs no ceremony.\n\n**VERDICT: PASS**",
-      "cost_usd": 0.017387
+      "detail": "judge claude-haiku-4-5: Reading through the report systematically:\n\nThe **Design Debt** section lists three findings:\n1. `ReplicaCount` and `Name` ceremony wrappers (R1)\n2. `Grants.All()` aliasing issue (R12)\n3. Package naming layering (R5)\n\nThe **Readability Debt** section addresses comments only.\n\nThe **Broader context** notes dead code references but no proposed type creation.\n\n**Critically:** There is no `TraceID` type (or equivalent) proposed anywhere as a Design Debt finding or as a Replace Primitive with Domain Type extraction. The `trace.go` file is reviewed (comment cleanup suggestions, function documentation improvements), but no domain type is proposed for the traceID parameter.\n\nThe report correctly recognizes that traceID is a pass-through raw string parameter copied into the X-Trace header once — it doesn't warrant its own domain type. This matches the criteria.\n\nVERDICT: PASS",
+      "cost_usd": 0.0047671
     }
   ],
   "cost_usd": 1.8923920000000003,
-  "judge_cost_usd": 0.017387,
+  "judge_cost_usd": 0.0047671,
   "duration_ms": 371891,
   "num_turns": 44,
   "segments": 6,

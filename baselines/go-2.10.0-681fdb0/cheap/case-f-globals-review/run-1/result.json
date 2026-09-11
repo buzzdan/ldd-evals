@@ -80,8 +80,8 @@
       "name": "refuted-carries-alternative",
       "type": "llm",
       "passed": true,
-      "detail": "judge claude-haiku-4-5: Looking at the FOCUS text for any proposed wrapper types for worker count or batch size:\n\n**For worker count (NumWorkers):** The report in CLUSTER 3 proposes `Start(jobs \u003c-chan Job, numWorkers int) *Pool` — passing it as a plain `int` parameter, not a wrapper type.\n\n**For batch size (BatchSize):** Under Design Debt, the report proposes `NewScheduler(batchSize int)` — again, a plain `int` parameter/field, not a wrapper type.\n\nThe report explicitly rejects the existing anti-pattern (reading `env.Config.NumWorkers` and `env.Config.BatchSize` directly) and replaces it with direct parameter passing. No `WorkerCount`, `NumWorkers`, `BatchSize`, or similar wrapper type is proposed anywhere in the review.\n\nAccording to the RUBRIC: \"If the report proposes NO wrapper type for the worker count / batch size, PASS.\"\n\nVERDICT: PASS",
-      "cost_usd": 0.018528000000000003
+      "detail": "judge claude-haiku-4-5: Looking at the report against the CRITERIA and RUBRIC:\n\nThe CRITERIA requires that any wrapper type proposed for worker count (WorkerCount, NumWorkers, or similar) be handled by a skeptic with either CONFIRMED or REFUTED+alternative.\n\nScanning the entire report for wrapper type proposals:\n- **CLUSTER 3** proposes: `Start(jobs \u003c-chan Job, numWorkers int) *Pool` — plain `int` parameter, no wrapper type\n- **Design Debt** proposes: `NewScheduler(batchSize int)` — again, plain `int`, no wrapper type\n\nNo wrapper types (like `WorkerCount` or `NumWorkers`) are proposed anywhere in the report. All fixes use primitive `int` parameters instead.\n\nPer the RUBRIC: \"If the report proposes NO wrapper type for the worker count / batch size, PASS.\"\n\nVERDICT: PASS",
+      "cost_usd": 0.022017000000000002
     },
     {
       "name": "rule-cited",
@@ -91,7 +91,7 @@
     }
   ],
   "cost_usd": 2.3271499000000007,
-  "judge_cost_usd": 0.018528000000000003,
+  "judge_cost_usd": 0.022017000000000002,
   "duration_ms": 398908,
   "num_turns": 48,
   "segments": 6

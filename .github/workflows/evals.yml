@@ -43,7 +43,7 @@ jobs:
       - uses: arduino/setup-task@v2
         with:
           version: 3.x
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v7
         with:
           version: v2.8
           working-directory: runner
@@ -88,7 +88,7 @@ jobs:
       - uses: arduino/setup-task@v2
         with:
           version: 3.x
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v7
         with:
           version: v2.8
           working-directory: ldd-evals/runner
