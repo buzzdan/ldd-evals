@@ -1,8 +1,9 @@
 ---
 # cluster: ≥2 hunters converge on "retention"; the report must render a
-# 🔗 CLUSTER entry naming it. members: CASE-A.retention-range-twice, CASE-A.defensive-recheck, CASE-A.zero-sentinel
+# 🔗 CLUSTER entry naming it (by the anchor or its last segment).
+# members: CASE-A.retention-range-twice, CASE-A.defensive-recheck, CASE-A.zero-sentinel
 type: regex
-pattern: 'CLUSTER.*retention'
+pattern: '(?i:\bcluster\b)[^\n]*\bretention\b'
 match: contains
 target: last_message
 ---

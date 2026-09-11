@@ -1,0 +1,11 @@
+**Reasoning:**
+
+The FOCUS text is a commit readreadiness report that states: "skipped spawning review agents since their default scope (staged changes) is empty." No actual code review was performed, and therefore no report with categorized bugs and design debt findings exists.
+
+The RUBRIC requires me to answer two questions from the report text:
+1. Is the concurrent map write (`lastSeen`) listed under the 🐛 Bugs section?
+2. Is the production `time.Sleep` listed under the 🔴 Design Debt section?
+
+The FOCUS text contains neither finding. The concurrent map write is not mentioned anywhere, and the `time.Sleep` is not mentioned anywhere. Since both questions must be answered yes to pass, and both are clearly "no," this fails.
+
+VERDICT: FAIL

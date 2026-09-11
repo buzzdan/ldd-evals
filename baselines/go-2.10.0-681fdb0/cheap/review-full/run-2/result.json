@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Alert\\.Channel over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Catalog\\.Find over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Device\\.Status over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 2 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*Device over last_message: 2 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 2 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Job\\.Kind over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": true,
-      "detail": "CLUSTER.*ProcessHeartbeat over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*Reporter over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "CLUSTER.*retention over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": false,
-      "detail": "judge claude-haiku-4-5: Looking at the report against the two specific criteria:\n\n**Question 1: Is the unguarded concurrent map write listed under 🐛 Bugs?**\n\nYES. In the Bugs section, item #1 clearly identifies the data race:\n\u003e \"**`internal/services/device_service.go:218` — confirmed data race**... `lastSeen` is written unlocked in `ProcessHeartbeat` and in the unbounded `flushLoop` goroutine...\"\n\n✓ This passes.\n\n**Question 2: Is the production time.Sleep (retry backoff) listed under 🔴 Design Debt?**\n\nNO. While the cluster section mentions \"uncancellable `time.Sleep` in its retry `goto` loop (line 181)\" alongside the data race in the R10 convergence point, this production time.Sleep is never explicitly filed under the Design Debt section. The only time.Sleep mentioned under Design Debt (in R7, \"test placement\") refers to test synchronization, not the production retry backoff in ProcessHeartbeat.\n\n✗ This fails.\n\nThe report correctly files the data race under Bugs but does not categorize the production time.Sleep separately under Design Debt as required.\n\nVERDICT: FAIL",
-      "cost_usd": 0.015316699999999999
+      "detail": "judge claude-haiku-4-5: # Assessment\n\nChecking both questions from the RUBRIC:\n\n**Question 1**: Is the unguarded concurrent map write listed under 🐛 Bugs?\n✅ **YES.** The report explicitly lists under 🐛 Bugs:\n\u003e 1. **`internal/services/device_service.go:218` — confirmed data race**, reproducible via `task test:race`. `lastSeen` is written unlocked in `ProcessHeartbeat` and in the unbounded `flushLoop` goroutine...\n\n**Question 2**: Is the production `time.Sleep` listed under 🔴 Design Debt (not Bugs)?\n❌ **NO.** The production `time.Sleep` (retry backoff in ProcessHeartbeat's goto loop, line 181) is mentioned only in the informational cluster section:\n\u003e **R10**: proven data race on `s.lastSeen` (above) + uncancellable `time.Sleep` in its retry `goto` loop (line 181)\n\nHowever, it is **not explicitly listed as a separate item in the 🔴 Design Debt section**. The Design Debt section covers R8, R6, R11, R12, R2, R4, and R7, but R10's `time.Sleep` finding is not formally filed there. (The report does mention `time.Sleep` under 🟡 Readability Debt, but only for test synchronization, not the production retry backoff.)\n\nThe data race passes placement criteria, but the production `time.Sleep` is missing from its required Design Debt categorization.\n\nVERDICT: FAIL",
+      "cost_usd": 0.043102
     },
     {
       "name": "no-edit",
@@ -273,7 +273,7 @@
       "name": "recall-CASE-F.env-config-global",
       "type": "regex",
       "passed": true,
-      "detail": "env\\.go over last_message: 2 match(es); want at least 1"
+      "detail": "env\\.go|env\\.Config over last_message: 3 match(es); want at least 1"
     },
     {
       "name": "recall-CASE-F.test-mutates-global",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 14.83260690000001,
-  "judge_cost_usd": 0.015316699999999999,
+  "judge_cost_usd": 0.043102,
   "duration_ms": 1357022,
   "num_turns": 149,
   "segments": 16

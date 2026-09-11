@@ -64,6 +64,10 @@ func (s agentSpec) args() []string {
 		"--permission-mode", "bypassPermissions",
 		"--max-turns", strconv.Itoa(s.MaxTurns),
 		"--no-session-persistence",
+		// The agent under test must not inherit this machine's user-level
+		// hooks, plugins or output-style settings; only the scaffold's own
+		// project settings apply.
+		"--setting-sources", "project,local",
 	}
 	if s.AppendSystemPrompt != "" {
 		args = append(args, "--append-system-prompt", s.AppendSystemPrompt)

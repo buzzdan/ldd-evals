@@ -80,8 +80,8 @@
       "name": "refuted-carries-alternative",
       "type": "llm",
       "passed": true,
-      "detail": "judge claude-haiku-4-5: **Reasoning:**\n\nThe report identifies that `env.Config.NumWorkers` and `env.Config.BatchSize` are being read as package-level globals (R8 design debt) and proposes a fix: \"pass NumWorkers/BatchSize as constructor/function params instead of reading the global from inside pool/jobs.\"\n\nCritically, the report **proposes NO wrapper type** for worker count or batch size. The fix recommends passing these as plain parameters (implicitly as `int` values), not wrapping them in a custom type like `WorkerCount` or `NumWorkers`.\n\nThe only type-wrapping proposal mentioned in the report is for `JobKind` (unrelated to worker count), where the skeptic's verdict is documented: `REFUTED (score 1, ...)` with the reasoning that there was \"no validation/methods proposed.\"\n\nSince no wrapper type for worker count/batch size is proposed, the report trivially satisfies the criteria.\n\n**VERDICT: PASS**",
-      "cost_usd": 0.020425
+      "detail": "judge claude-haiku-4-5: Reading through the report, I need to check whether any wrapper type for worker count (WorkerCount, NumWorkers, etc.) is proposed and whether the skeptic handled it honestly.\n\nScanning the findings:\n\n- **R8 (Design Debt)** discusses `env.Config.NumWorkers` as a global that should be \"passed NumWorkers/BatchSize as constructor/function params\" — this describes passing the value as a primitive parameter, not wrapping it in a type.\n\n- **POLISH section** shows a skeptic verdict on JobKind (unrelated to worker count): \"skeptic REFUTED promoting JobKind to a new type — score 1, no validation/methods proposed.\"\n\n- No other finding proposes creating a wrapper type (WorkerCount, NumWorkers, etc.) for the worker count or batch size.\n\nThe report proposes no wrapper type for the worker count/batch size. It recommends passing NumWorkers as a plain parameter instead of reading it from a global, but doesn't introduce or defend a wrapper type.\n\nPer the RUBRIC: \"If the report proposes NO wrapper type for the worker count / batch size, PASS.\"\n\nVERDICT: PASS",
+      "cost_usd": 0.021144000000000003
     },
     {
       "name": "rule-cited",
@@ -91,7 +91,7 @@
     }
   ],
   "cost_usd": 5.0394105,
-  "judge_cost_usd": 0.020425,
+  "judge_cost_usd": 0.021144000000000003,
   "duration_ms": 630053,
   "num_turns": 123,
   "segments": 12
