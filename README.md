@@ -32,7 +32,7 @@ its plugin explicitly with `PLUGIN=<path to go-linter-driven-development>`.
     task go:manifest                            # manifest against the fixture
     task go:graders                             # regenerate review-full graders
     task go:run TIER=cheap CAP=1 CASE='trigger-*' PLUGIN=/path/to/go-linter-driven-development
-    task go:regrade OUT=baselines/go-2.10.0-681fdb0 TIER=cheap PLUGIN=...
+    task go:regrade OUT=baselines/go-2.10.0-5828c34 TIER=cheap PLUGIN=...
 
 `go:run` copies the cases, scaffold, postcheck helpers and fixture into
 `<plugin>/evals/`, a path the plugin repository ignores, because the built-in
