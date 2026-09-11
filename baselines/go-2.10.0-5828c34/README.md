@@ -99,6 +99,14 @@ state the whole-repository scope explicitly so the case measures recall, not sco
    runs) widened the scope to the whole tree on its own. Either the command must define the
    no-argument scope as the repository, or the skill must refuse to report clean on an empty
    scope. Until then the case's `review-full` signal is one run in three.
+
+   *Errata, 2026-09-11.* The contract was decided the other way: the default scope is the
+   checkout's changes, the ceiling is the current PR, and the whole repository is reviewed
+   only when asked for explicitly (`--all`). Under that contract runs 2 and 3 were the
+   correct behavior and run 1, which widened on its own, was the defect. The case now
+   invokes `/go-ldd-review --all`, and `review-clean-tree` is the negative control that
+   expects "nothing to review" from the bare command on this fixture. The three recorded
+   verdicts stand as recorded; compare future `review-full` runs against run 1's 90 of 111.
 2. **Headless sessions still wait badly** (681fdb0 finding 3). Four of 23 cheap runs spawned
    hunters without the foreground flag and then polled: centerpiece run 1 made 109
    `ReadNotifications` and 19 `ListAgents` calls over 4 segments (185 turns, $9.96, the same
