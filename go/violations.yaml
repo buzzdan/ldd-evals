@@ -1319,7 +1319,7 @@
   files: [internal/report/reporter.go]
   anchor: 'if r\.(Sink|Clock) == nil'
   expect:
-    review:   { category: "🔴", cluster: "Reporter", fix: "Hoist method checks into the constructor", also: "Introduce Null Object (R11)" }
+    review:   { category: "🔴", cluster: "Reporter", fix: "Introduce Null Object (R11)", also: "Hoist method checks into the constructor is the move only if Sink were required" }
     refactor: { gone: 'if [a-z]\w*\.\w+ == nil', count_max: 0, scope: 'internal/report/', guard: 'interface \{', guard_count_max: 0 }
 
 - id: CASE-E.exported-nilable-fields
