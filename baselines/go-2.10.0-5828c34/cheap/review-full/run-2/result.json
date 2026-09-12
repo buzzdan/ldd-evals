@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?Device\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?ProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?Reporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?retention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": false,
-      "detail": "judge claude-haiku-4-5: The report contains no findings whatsoever. It explicitly states that the diff scope is empty (no staged/unstaged/untracked changes), so \"no rule-hunters, skeptic, or comment-critic had anything to run against. No findings possible with zero diff scope.\"\n\nConsequently:\n\n1. **The unguarded concurrent map write is not listed under 🐛 Bugs** (or anywhere else) — the report contains no bug findings\n2. **The production time.Sleep is not listed under 🔴 Design Debt** (or anywhere else) — the report contains no design debt findings\n\nBoth required conditions must be met to pass. Since the report has zero findings and makes no mention of either the concurrent map write or the time.Sleep calls, it fails to satisfy the criteria.\n\nVERDICT: FAIL",
-      "cost_usd": 0.0045333000000000005
+      "detail": "judge claude-haiku-4-5: The report provides a \"no-op check\" with an empty diff scope. The review states: \"diff scope (`git diff --cached --name-only -- '*.go'`) is empty, so no rule-hunters, skeptic, or comment-critic had anything to run against. No findings possible with zero diff scope.\"\n\nAs a result:\n1. The unguarded concurrent map write (lastSeen) is **not mentioned anywhere** in the report, let alone under the 🐛 Bugs section.\n2. The production `time.Sleep` calls are **not mentioned anywhere** in the report, let alone under 🔴 Design Debt.\n\nBoth required findings are completely absent. The report failed to perform a substantive code review because there was no diff to review against — it appears the review was run on a commit with no staged changes.\n\nVERDICT: FAIL",
+      "cost_usd": 0.0047583
     },
     {
       "name": "no-edit",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 0.1436438,
-  "judge_cost_usd": 0.0045333000000000005,
+  "judge_cost_usd": 0.0047583,
   "duration_ms": 38681,
   "num_turns": 10,
   "segments": 1,

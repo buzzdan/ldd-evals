@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": true,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Alert\\.Channel|Channel)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": true,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Device\\.Status|Status)\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": true,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 1 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?Device\\b over last_message: 1 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?ProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?Reporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?retention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": true,
-      "detail": "judge claude-haiku-4-5: Looking at the FOCUS text against the two specific criteria:\n\n**Question 1:** Is the unguarded concurrent map write listed under 🐛 Bugs?\nYes. Under the 🐛 BUGS section, Bug #1 clearly states: \"`internal/services/device_service.go` — `s.lastSeen` map is written from `ProcessHeartbeat` (line 218), `Purge` (463-467), and the unlocked `flushLoop` (568-578) with **no mutex held on 3 of 4 paths** — a real `fatal error: concurrent map` crash risk.\"\n\n**Question 2:** Is the production `time.Sleep` listed under 🔴 Design Debt (not Bugs)?\nYes. Under 🔴 DESIGN DEBT, R10 explicitly lists: \"production `time.Sleep` (uncancellable backoff) in `retry.go`, `device_service.go`'s down-notification retry, and `sync_service.go`'s save-retry\" as a design debt finding.\n\nBoth questions are answered affirmatively. The report correctly categorizes the concurrent map write as a runtime bug and the time.Sleep calls as design debt.\n\nVERDICT: PASS",
-      "cost_usd": 0.005651300000000001
+      "detail": "judge claude-haiku-4-5: Looking at the report against the two criteria:\n\n**Question 1: Unguarded concurrent map write under 🐛 Bugs?**\nYes. Under the 🐛 BUGS section, finding #1 explicitly states: \"`s.lastSeen` map is written from `ProcessHeartbeat` (line 218), `Purge` (463-467), and the unlocked `flushLoop` (568-578) with **no mutex held on 3 of 4 paths** — a real `fatal error: concurrent map` crash risk.\" This precisely describes the concurrent map read/write race on the lastSeen map during ProcessHeartbeat and the flush goroutine.\n\n**Question 2: Production time.Sleep calls under 🔴 DESIGN DEBT?**\nYes. Under the 🔴 DESIGN DEBT section, R10 states: \"production `time.Sleep` (uncancellable backoff) in `retry.go`, `device_service.go`'s down-notification retry, and `sync_service.go`'s save-retry\". This correctly categorizes the retry backoff sleep calls as design debt rather than bugs.\n\nBoth questions are answered affirmatively.\n\nVERDICT: PASS",
+      "cost_usd": 0.0056613
     },
     {
       "name": "no-edit",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 5.520410099999999,
-  "judge_cost_usd": 0.005651300000000001,
+  "judge_cost_usd": 0.0056613,
   "duration_ms": 918560,
   "num_turns": 57,
   "segments": 3,
