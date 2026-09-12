@@ -114,6 +114,16 @@ state the whole-repository scope explicitly so the case measures recall, not sco
    run 1 3. In the medium tier: case-a pass 1 3 segments, case-b pass 2 6, case-e pass 2 2,
    quickfix pass 2 5 (finding 7). `segments` above 1 in `result.json` is this pathology; the
    non-interactive note in every prompt does not prevent it.
+
+   *Errata, 2026-09-12.* The cause was the host, not the plugin. The cloud container that
+   recorded this baseline exports `CLAUDE_AUTO_BACKGROUND_TASKS=true`, the runner passed its
+   whole environment to the agent, and under that flag claude turns any foreground `Agent`
+   call still running after 120 seconds into a background task answered "Async agent
+   launched"; every such conversion in the review traces sits at exactly 120.0 s and every
+   inline hunter result under it. A developer's shell does not set the flag, so a foreground
+   call there blocks until the hunter returns. The runner now strips the flag; the polling
+   counts and `segments` above are the host's behavior and are not comparable with runs
+   recorded after the fix.
 3. **The Null Object alternative is gone from the nil-handling review.** Both case-e runs route
    `Reporter.Sink`/`Clock` to "unexport, resolve defaults once in `NewReporter`, delete the
    `Record()` re-checks" and never mention a null object (`DiscardSink`), which the manifest

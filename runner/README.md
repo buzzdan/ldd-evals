@@ -46,7 +46,10 @@ Exit codes: 0 every case ≥ threshold · 1 some case below · 2 budget exceeded
   check that concepts landed in the right file (the `art-judge` graders of the refactor cases use it).
 - `is_error` results get a failing synthetic `execution` grader; timeouts/incomplete traces set `error` and skip grading.
   The agent runs with `IS_SANDBOX=1` because `--permission-mode bypassPermissions` is refused for root without it
-  (harmless for other users).
+  (harmless for other users), and without `CLAUDE_AUTO_BACKGROUND_TASKS`: cloud sessions export that flag, and
+  under it claude turns any foreground `Agent` call still running after 120 seconds into a background task
+  answered "Async agent launched", which a developer's shell never does. Runs recorded before this was stripped
+  (every baseline up to go-2.10.0-5828c34) carry that host behavior in their `segments` and polling counts.
 
 ## Regrading without re-running
 

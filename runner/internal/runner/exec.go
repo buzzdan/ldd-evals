@@ -78,10 +78,29 @@ func (s agentSpec) args() []string {
 	return args
 }
 
-// runAgent executes claude inside WorkDir, streaming stdout to
+// autoBackgroundVar is the claude setting under which a foreground Agent call
+// still running after 120 seconds is turned into a background task and answered
+// "Async agent launched". Cloud sessions export it; a developer's shell does not.
+const autoBackgroundVar = "CLAUDE_AUTO_BACKGROUND_TASKS"
+
+// agentEnv is the environment the agent runs in: the runner's own with
+// IS_SANDBOX=1 added (bypassPermissions is refused for root without it) and
+// autoBackgroundVar removed, so a run measures the plugin's waiting behavior
+// rather than the host's.
+func agentEnv(environ []string) []string {
+	env := make([]string, 0, len(environ)+1)
+	for _, kv := range environ {
+		if strings.HasPrefix(kv, autoBackgroundVar+"=") {
+			continue
+		}
+		env = append(env, kv)
+	}
+	return append(env, "IS_SANDBOX=1")
+}
+
+// runAgent executes claude inside WorkDir with agentEnv, streaming stdout to
 // <OutDir>/trace.jsonl and stderr to <OutDir>/stderr.txt, then parses the
-// trace. IS_SANDBOX=1 is set because bypassPermissions is refused for root
-// without it.
+// trace.
 func runAgent(ctx context.Context, spec agentSpec) (trace.Trace, error) {
 	ctx, cancel := context.WithTimeout(ctx, spec.Timeout)
 	defer cancel()
@@ -93,7 +112,7 @@ func runAgent(ctx context.Context, spec agentSpec) (trace.Trace, error) {
 	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, "claude", spec.args()...)
 	cmd.Dir = spec.WorkDir
-	cmd.Env = append(os.Environ(), "IS_SANDBOX=1")
+	cmd.Env = agentEnv(os.Environ())
 	cmd.Stdout, cmd.Stderr = traceFile, &stderr
 	cmd.WaitDelay = killGrace
 	// claude spawns tool subprocesses; on timeout kill its whole process group
