@@ -12,12 +12,14 @@
 #                      of its file set when reports name the plant another way
 #                      (by its symbol, say).
 #   cluster-<slug>.md  one per distinct expect.review.cluster anchor: a
-#                      cluster line naming that anchor must appear. The default
-#                      pattern matches the word "cluster" (any case, so a bold
-#                      or numbered header counts) followed on the same line by
-#                      the anchor or, for a dotted anchor such as
-#                      `Device.Status`, its last segment alone: reports write
-#                      `CLUSTER: Status` as often as `CLUSTER: Device.Status`.
+#                      cluster entry naming that anchor must appear. The default
+#                      pattern accepts the anchor — or, for a dotted anchor such
+#                      as `Device.Status`, its last segment alone — either on a
+#                      line carrying the word "cluster" (any case) or at the
+#                      start of a bullet within eight lines below a "cluster(s)"
+#                      header: reports write `CLUSTER: Status`, `CLUSTER:
+#                      Device.Status` and `**Clusters**` followed by
+#                      `- **Device.Status** — R1, R11` alike.
 #                      An entry may carry `cluster_match: '<ERE>'` to replace
 #                      that default when reports spell the cluster in more
 #                      than one way.
@@ -159,7 +161,11 @@ for anchor in "${!clusters[@]}"; do
   else
     names="$esc"
   fi
-  pattern="${cluster_match[$anchor]:-(?i:\\bcluster\\b)[^\\n]*\\b$names\\b}"
+  # Default: the anchor on a line that carries the word "cluster" (CLUSTER: \`Device.Status\`),
+  # or at the start of a bullet within eight lines below a "cluster(s)" header
+  # (**Clusters** followed by "- **Device.Status** — R1, R11").
+  default_pattern="(?i:\\bcluster\\b)[^\\n]*\\b$names\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\x60?$names\\b"
+  pattern="${cluster_match[$anchor]:-$default_pattern}"
   cat > "$out/cluster-$s.md" <<EOF
 ---
 # cluster: ≥2 hunters converge on "$anchor"; the report must render a

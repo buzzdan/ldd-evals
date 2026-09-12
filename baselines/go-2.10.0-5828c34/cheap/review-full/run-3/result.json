@@ -14,49 +14,49 @@
       "name": "cluster-alert-channel",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Alert\\.Channel|Channel)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Alert\\.Channel|Channel)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-catalog-find",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Catalog\\.Find|Find)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Catalog\\.Find|Find)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device-status",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Device\\.Status|Status)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Device\\.Status|Status)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-device",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bDevice\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?Device\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-job-kind",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\b(Job\\.Kind|Kind)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?(Job\\.Kind|Kind)\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-processheartbeat",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bProcessHeartbeat\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?ProcessHeartbeat\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-reporter",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bReporter\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?Reporter\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-retention",
       "type": "regex",
       "passed": false,
-      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b over last_message: 0 match(es); want at least 1"
+      "detail": "(?i:\\bcluster\\b)[^\\n]*\\bretention\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\\x60?retention\\b over last_message: 0 match(es); want at least 1"
     },
     {
       "name": "cluster-role-packages",
@@ -80,8 +80,8 @@
       "name": "judge-categories",
       "type": "llm",
       "passed": false,
-      "detail": "judge claude-haiku-4-5: **Reasoning:**\n\nThe FOCUS text is a commit readreadiness report that states: \"skipped spawning review agents since their default scope (staged changes) is empty.\" No actual code review was performed, and therefore no report with categorized bugs and design debt findings exists.\n\nThe RUBRIC requires me to answer two questions from the report text:\n1. Is the concurrent map write (`lastSeen`) listed under the 🐛 Bugs section?\n2. Is the production `time.Sleep` listed under the 🔴 Design Debt section?\n\nThe FOCUS text contains neither finding. The concurrent map write is not mentioned anywhere, and the `time.Sleep` is not mentioned anywhere. Since both questions must be answered yes to pass, and both are clearly \"no,\" this fails.\n\nVERDICT: FAIL",
-      "cost_usd": 0.004715900000000001
+      "detail": "judge claude-haiku-4-5: The report does not contain a code review with categorized findings. Instead, it's a commit-readiness report indicating that no staged/unstaged changes exist and review was skipped accordingly. \n\nThe report contains no sections for 🐛 Bugs, 🔴 Design Debt, or any other finding categories. It makes no mention of:\n- The unguarded concurrent map write on lastSeen\n- Any data race condition\n- The production time.Sleep calls or retry backoff\n\nSince both rubric questions require the report text to list these findings in the correct sections, and the report contains neither finding at all, both questions answer \"no.\"\n\nVERDICT: FAIL",
+      "cost_usd": 0.004490900000000001
     },
     {
       "name": "no-edit",
@@ -673,7 +673,7 @@
     }
   ],
   "cost_usd": 0.1344452,
-  "judge_cost_usd": 0.004715900000000001,
+  "judge_cost_usd": 0.004490900000000001,
   "duration_ms": 35343,
   "num_turns": 9,
   "segments": 1,
