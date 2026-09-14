@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'CONFIRMED \(score[^\n]*TraceID'
+pattern: 'CONFIRMED\W{1,6}score[^\n]*TraceID'
 match: not_contains
 target: last_message
 ---

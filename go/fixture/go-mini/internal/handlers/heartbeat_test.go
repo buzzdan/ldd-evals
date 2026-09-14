@@ -35,7 +35,7 @@ func newFleetServer(t *testing.T) (*httptest.Server, *mocks.Repo) {
 	}
 	svc := services.NewDeviceService(repo, services.NewNotifier(""), services.NewAuditLog(io.Discard))
 	mux := http.NewServeMux()
-	handlers.Routes(mux, repo, svc)
+	handlers.Routes(mux, repo, svc, models.NewGrants(models.PermRead, models.PermWrite))
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 	return srv, repo

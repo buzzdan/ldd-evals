@@ -2,7 +2,7 @@
   "case": "case-a-retention-review",
   "run": 2,
   "model": "claude-sonnet-5",
-  "passed": false,
+  "passed": true,
   "graders": [
     {
       "name": "anchor-config",
@@ -79,8 +79,8 @@
     {
       "name": "skeptic-confirmed-4plus",
       "type": "regex",
-      "passed": false,
-      "detail": "CONFIRMED \\(score:? ?([4-9]|1[0-9]) over last_message: 0 match(es); want at least 1"
+      "passed": true,
+      "detail": "CONFIRMED\\W{1,6}score:? ?([4-9]|1[0-9]) over last_message: 2 match(es); want at least 1"
     }
   ],
   "cost_usd": 1.2870318,

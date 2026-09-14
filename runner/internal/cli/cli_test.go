@@ -119,9 +119,9 @@ func assertWholeSuiteAggregate(t *testing.T, outDir string) {
 	if twoTools.Runs != 1 || twoTools.Passed != 1 || twoTools.PassRate != 1 || twoTools.Tier != "cheap" {
 		t.Errorf("two-tools summary = %+v", twoTools)
 	}
-	// 4 agent runs at $0.0123 plus one judge call at $0.001.
-	if !near(agg.Aggregates.TotalCostUSD, 4*0.0123+0.001) {
-		t.Errorf("TotalCostUSD = %v, want %v", agg.Aggregates.TotalCostUSD, 4*0.0123+0.001)
+	// 4 agent runs at $0.0123 plus one judge verdict of two unanimous votes at $0.001 each.
+	if !near(agg.Aggregates.TotalCostUSD, 4*0.0123+0.002) {
+		t.Errorf("TotalCostUSD = %v, want %v", agg.Aggregates.TotalCostUSD, 4*0.0123+0.002)
 	}
 	if !near(agg.Aggregates.PassRate, 0.25) || !near(agg.Aggregates.AverageScore, 0.25) {
 		t.Errorf("PassRate/AverageScore = %v/%v, want 0.25/0.25", agg.Aggregates.PassRate, agg.Aggregates.AverageScore)
@@ -138,7 +138,7 @@ func assertTwoToolsRun(t *testing.T, outDir, suite string) {
 	if res.Case != "two-tools" || res.Run != 1 || res.Model != "claude-sonnet-5" || !res.Passed || res.Error != "" {
 		t.Errorf("result header = %+v", res)
 	}
-	if res.CostUSD != 0.0123 || res.JudgeCostUSD != 0.001 || res.DurationMS != 1234 || res.NumTurns != 4 {
+	if res.CostUSD != 0.0123 || !near(res.JudgeCostUSD, 0.002) || res.DurationMS != 1234 || res.NumTurns != 4 {
 		t.Errorf("counters = cost %v judge %v duration %d turns %d", res.CostUSD, res.JudgeCostUSD, res.DurationMS, res.NumTurns)
 	}
 	if len(res.Graders) != 10 {

@@ -17,17 +17,65 @@ var ErrNoVerdict = errors.New("grade: judge reply has no `VERDICT: PASS|FAIL` li
 // ErrEmptyModel is returned when a Judge is built without a model.
 var ErrEmptyModel = errors.New("grade: judge model is required")
 
-// Verdict is one judge reply.
+// Verdict is a judge's answer: one reply from Ask, or the majority of the
+// replies Vote collected, with Votes recording each reply's verdict in order.
 type Verdict struct {
 	Passed  bool
 	Reply   string
 	CostUSD float64
+	Votes   []bool
 }
 
+// Tally renders the votes as "PASS,FAIL,PASS"; empty for a single reply.
+func (v Verdict) Tally() string {
+	parts := make([]string, 0, len(v.Votes))
+	for _, passed := range v.Votes {
+		parts = append(parts, passFail(passed))
+	}
+	return strings.Join(parts, ",")
+}
+
+func passFail(passed bool) string {
+	if passed {
+		return "PASS"
+	}
+	return "FAIL"
+}
+
+// maxVotes is the most replies a Vote collects; two agreeing replies decide,
+// so a unanimous verdict costs two calls and a split one three, as in
+// plugin-eval's 2-of-3 judge.
+const maxVotes = 3
+
 // Judge runs `claude -p --model <judge> --output-format json --tools ""` with
-// the prompt on stdin. Single vote — plugin-eval uses 2-of-3.
+// the prompt on stdin.
 type Judge struct {
 	model string
+}
+
+// Vote asks until two replies agree (at most three) and returns the majority
+// verdict; the reply carries every vote in order and the cost is their sum.
+func (j Judge) Vote(ctx context.Context, prompt string) (Verdict, error) {
+	var out Verdict
+	var replies []string
+	pass, fail := 0, 0
+	for i := 1; i <= maxVotes && pass < 2 && fail < 2; i++ {
+		v, err := j.Ask(ctx, prompt)
+		if err != nil {
+			return Verdict{}, fmt.Errorf("vote %d: %w", i, err)
+		}
+		if v.Passed {
+			pass++
+		} else {
+			fail++
+		}
+		out.Votes = append(out.Votes, v.Passed)
+		out.CostUSD += v.CostUSD
+		replies = append(replies, fmt.Sprintf("--- vote %d: %s ---\n%s", i, passFail(v.Passed), v.Reply))
+	}
+	out.Passed = pass > fail
+	out.Reply = strings.Join(replies, "\n\n")
+	return out, nil
 }
 
 // NewJudge validates and builds a Judge.
