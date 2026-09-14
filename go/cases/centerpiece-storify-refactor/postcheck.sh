@@ -45,5 +45,9 @@ assert_ge "production code CALLS a Parse*Heartbeat* constructor (declarations an
 assert_ge "R7: an external-package _test.go calls Parse*Heartbeat*( with a literal" \
   "$(external_test_calls 'Parse\w*Heartbeat\w*\("' 'internal/**/*_test.go')" 1
 
+echo "== shipped =="
+assert_ge "at least one commit after the scaffold base (the green tree is committed)" "$(commits_since_base)" 1
+assert_eq "working tree clean at the end (nothing left uncommitted)" "$(git -C "$EVAL_DIR" status --porcelain | grep -c .)" 0
+
 assert "black-box heartbeat suite" run_blackbox
 finish

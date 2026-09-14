@@ -22,5 +22,9 @@ assert_ge "a Default*/System*/Discard* constructor is CALLED (not just declared)
 # wrong fix (a function type like Clock is fine — it is not an interface).
 assert_eq "R6 Q1: no interface introduced in internal/report" "$(count_matches_prod 'interface \{' 'internal/report/*.go')" 0
 assert_eq "no //nolint added to internal/report" "$(count_matches '//nolint' 'internal/report/*.go')" 0
+echo "== shipped =="
+assert_ge "at least one commit after the scaffold base (the green tree is committed)" "$(commits_since_base)" 1
+assert_eq "working tree clean at the end (nothing left uncommitted)" "$(git -C "$EVAL_DIR" status --porcelain | grep -c .)" 0
+
 assert "black-box heartbeat suite" run_blackbox
 finish

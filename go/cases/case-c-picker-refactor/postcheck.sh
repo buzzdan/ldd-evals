@@ -21,5 +21,9 @@ if [[ -n "$pick_file" ]]; then
 fi
 
 assert_eq "no //nolint in internal/placement production code" "$(count_matches_prod '//nolint' 'internal/placement/*.go')" 0
+echo "== shipped =="
+assert_ge "at least one commit after the scaffold base (the green tree is committed)" "$(commits_since_base)" 1
+assert_eq "working tree clean at the end (nothing left uncommitted)" "$(git -C "$EVAL_DIR" status --porcelain | grep -c .)" 0
+
 assert "black-box heartbeat suite" run_blackbox
 finish
