@@ -42,7 +42,7 @@ pass **$42.68**; of that the judges cost $0.07, $0.44 and $0.35.
 |---|---|---|---|---|
 | trigger-non-go | 3/3 | 1,1,1 | $0.12 | negative trigger control holds |
 | trigger-go | 0/3 | 3,1,3 | $0.32 | names the skill, never invokes it or announces (unchanged, see 681fdb0 caveat) |
-| case-a-retention-review | 0/2 | 34,32 | $2.38 | skeptic REFUTES `RetentionDays`; run 2 does name the domain-type fix |
+| case-a-retention-review | 1/2 | 34,32 | $2.38 | run 1: skeptic REFUTES `RetentionDays` at ~3 on its marginal-score bias; run 2 CONFIRMS `Retention` at 5 and names the domain-type fix (recorded 0/2 until the #7 regrade, see the erratum under finding 5) |
 | case-b-endpoint-review | 0/2 | 46,42 | $3.26 | skeptic REFUTES `Endpoint` and `Scheme` |
 | case-c-picker-review | 0/2 | 32,44 | $3.38 | skeptic REFUTES the leaf type; run 2 cites the flag evidence run 2 of 681fdb0 missed |
 | case-d-ceremony-review | 2/2 | 44,37 | $3.33 | negative control: no extraction proposed; run 1 polled notifications across 6 segments |
@@ -51,7 +51,8 @@ pass **$42.68**; of that the judges cost $0.07, $0.44 and $0.35.
 | centerpiece-storify-review | 1/2 | 185,39 | $11.25 | run 1: 109 `ReadNotifications` calls, no R3 linter numbers; run 2 passes once the cluster-status graders accept the rule ids on the line after `CLUSTER: \`Status\`` |
 | review-full | 0/3 | 57,10,9 | $5.80 | run 1: 90 of 111; runs 2 and 3 certified an **empty diff scope** without running a hunter (finding 1) |
 
-Suite pass rate 0.30 (7 of 23 runs), average grader score 0.75.
+Suite pass rate 0.35 (8 of 23 runs), average grader score 0.76 — 0.30 (7 of 23) and 0.75 as
+first recorded; the #7 regrade of case-a and case-b review moved case-a run 2 to a pass.
 
 ## Comparison with go-2.10.0-681fdb0 (Phase 1.5 acceptance)
 
@@ -140,6 +141,15 @@ state the whole-repository scope explicitly so the case measures recall, not sco
    cases A, B and C are 0/2 again with the skeptic scoring each proposed type 0–1, while the
    centerpiece's `Status` is CONFIRMED at 4 and the whole-repo review confirms `Alert.Channel`
    at 4 and refutes `Device.Status` in the same report.
+
+   *Errata, 2026-09-14.* Half of case A was the grader, not the skeptic. Run 2's skeptic
+   confirmed `Retention` at 5 and the report wrote `**CONFIRMED** (score 5`; the
+   `skeptic-confirmed-4plus` grader wanted the literal `CONFIRMED (score` and failed it. #7
+   lets the four verdict graders accept any punctuation between the word and the score and
+   regrades case-a and case-b review from the archived traces (regex graders only, no judge
+   spend): case-a run 2 passes, case-a is 1/2, case-b stays 0/2 (both runs REFUTED at 0–1),
+   and the cheap aggregate is rebuilt from every `result.json`. Run 1's refutation at a
+   marginal ~3 stands as the skeptic finding this item describes.
 6. **The trigger does not fire headless** (681fdb0 finding 5): all three trigger-go runs read
    one or two files and answered in 1–3 turns without a `Skill` call or the announcement.
 7. **Quickfix has no stopping rule, and its outcome is a coin flip** (681fdb0 finding 9). Pass 1:
