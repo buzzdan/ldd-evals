@@ -13,6 +13,7 @@ import (
 	"example.com/go-mini/internal/env"
 	"example.com/go-mini/internal/handlers"
 	"example.com/go-mini/internal/jobs"
+	"example.com/go-mini/internal/models"
 	"example.com/go-mini/internal/repository"
 	"example.com/go-mini/internal/services"
 )
@@ -20,6 +21,7 @@ import (
 func main() {
 	dryRun := flag.Bool("dry-run", false, "keep devices in memory instead of the JSON store")
 	storePath := flag.String("store", defaultStorePath(), "path of the JSON device store (default from STORE_PATH)")
+	readOnly := flag.Bool("read-only", false, "serve reads only; refuse registrations and heartbeats")
 	flag.Parse()
 
 	env.Load()
@@ -56,7 +58,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	routes(mux, store)
-	handlers.Routes(mux, store, svc)
+	handlers.Routes(mux, store, svc, grantsFor(*readOnly))
 
 	addr := listenAddr()
 	log.Printf("svc listening on %s (region %s, %d workers)", addr, env.Config.Region, env.Config.NumWorkers)
@@ -68,6 +70,15 @@ func main() {
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// grantsFor is the instance's own authority: every instance may read, and
+// only one started writable may register devices or accept heartbeats.
+func grantsFor(readOnly bool) models.Grants {
+	if readOnly {
+		return models.NewGrants(models.PermRead)
+	}
+	return models.NewGrants(models.PermRead, models.PermWrite)
 }
 
 func mustOpenFileRepo(path string) *repository.FileRepo {

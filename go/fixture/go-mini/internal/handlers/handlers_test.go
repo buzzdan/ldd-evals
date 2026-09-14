@@ -134,7 +134,8 @@ func TestHandler_ListEchoesTraceHeader(t *testing.T) {
 func TestRoutes_ServesStatusAndDevices(t *testing.T) {
 	mux := http.NewServeMux()
 	store := seededStore(t)
-	handlers.Routes(mux, store, services.NewDeviceService(store, services.NewNotifier(""), services.NewAuditLog(io.Discard)))
+	handlers.Routes(mux, store, services.NewDeviceService(store, services.NewNotifier(""), services.NewAuditLog(io.Discard)),
+		models.NewGrants(models.PermRead, models.PermWrite))
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 
@@ -155,5 +156,27 @@ func TestRoutes_ServesStatusAndDevices(t *testing.T) {
 	defer func() { _ = post.Body.Close() }()
 	if post.StatusCode != http.StatusCreated {
 		t.Fatalf("POST /devices: %d, want 201", post.StatusCode)
+	}
+}
+
+func TestRoutes_ReadOnlyGrantsRefuseWrites(t *testing.T) {
+	mux := http.NewServeMux()
+	store := seededStore(t)
+	handlers.Routes(mux, store, services.NewDeviceService(store, services.NewNotifier(""), services.NewAuditLog(io.Discard)),
+		models.NewGrants(models.PermRead))
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	post, err := srv.Client().Post(srv.URL+"/devices", "application/json",
+		strings.NewReader(`{"id":"dev-9","tenant":"t3","email":"ops@example.com"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = post.Body.Close() }()
+	if post.StatusCode != http.StatusForbidden {
+		t.Fatalf("POST /devices without write grant: %d, want 403", post.StatusCode)
+	}
+	if _, err := store.Get(context.Background(), "t3", "dev-9"); err == nil {
+		t.Fatal("refused registration reached the store")
 	}
 }

@@ -3,6 +3,7 @@ package grade_test
 import (
 	"context"
 	"errors"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -159,10 +160,10 @@ func TestLLM_Grade_FileFocusWithFakeJudge(t *testing.T) {
 		t.Fatalf("NewJudge: %v", err)
 	}
 	out := g.Grade(context.Background(), grade.Subject{Dir: dir, OutDir: outDir, Judge: judge})
-	if !out.Passed || out.CostUSD != 0.001 {
-		t.Fatalf("Outcome = %+v, want PASS at $0.001", out)
+	if !out.Passed || math.Abs(out.CostUSD-0.002) > 1e-9 {
+		t.Fatalf("Outcome = %+v, want PASS at $0.002 (two unanimous votes)", out)
 	}
-	if !strings.Contains(out.Detail, "judge fake-judge") {
+	if !strings.Contains(out.Detail, "judge fake-judge (PASS,PASS)") {
 		t.Errorf("Detail = %q", out.Detail)
 	}
 	reply, err := os.ReadFile(filepath.Join(outDir, "judge-altitude.txt"))
@@ -183,8 +184,8 @@ func TestLLM_Grade_JudgeFailVerdict(t *testing.T) {
 		t.Fatalf("NewJudge: %v", err)
 	}
 	out := g.Grade(context.Background(), grade.Subject{Trace: parseTrace(t, resultEvent("x")), Judge: judge})
-	if out.Passed || out.CostUSD != 0.001 {
-		t.Errorf("Outcome = %+v, want FAIL at $0.001", out)
+	if out.Passed || math.Abs(out.CostUSD-0.002) > 1e-9 {
+		t.Errorf("Outcome = %+v, want FAIL at $0.002 (two unanimous votes)", out)
 	}
 }
 

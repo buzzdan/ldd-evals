@@ -449,6 +449,15 @@
   symbol: 'TraceID'
   expect: { review: { findings: 0, not_contains: 'TraceID' } }
 
+- id: CTRL.R1.grants-type
+  rule: R1
+  control: true
+  case: D
+  files: [internal/models/grants.go, internal/handlers/authz.go]
+  anchor: 'func \(g Grants\) Has\(p Permission\) bool|grants\.Has\(models\.PermWrite\)'
+  mention_ok: true
+  expect: { review: { findings: 0, note: "an earned type with a production caller: never re-proposed, never removed as dead code" } }
+
 # ─── R2 self-validating types ───────────────────────────────────────────────
 
 - id: R2.Q1.device-exported-fields

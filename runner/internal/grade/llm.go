@@ -189,19 +189,19 @@ func (g LLM) Prompt(focusText string) string {
 	return b.String()
 }
 
-// Grade implements Grader. A missing focus file fails without spending on the
-// judge.
+// Grade implements Grader. The judge votes (two agreeing replies decide, at
+// most three); a missing focus file fails without spending on it.
 func (g LLM) Grade(ctx context.Context, s Subject) Outcome {
 	focusText, err := g.focus.text(s)
 	if err != nil {
 		return failf(g.name, g.Type(), "%v", err)
 	}
-	v, err := s.Judge.Ask(ctx, g.Prompt(focusText))
+	v, err := s.Judge.Vote(ctx, g.Prompt(focusText))
 	if err != nil {
 		return failf(g.name, g.Type(), "judge: %v", err)
 	}
 	g.saveReply(s.OutDir, v.Reply)
-	out := verdict(g.name, g.Type(), v.Passed, clip(fmt.Sprintf("judge %s: %s", s.Judge.Model(), v.Reply)))
+	out := verdict(g.name, g.Type(), v.Passed, clip(fmt.Sprintf("judge %s (%s): %s", s.Judge.Model(), v.Tally(), v.Reply)))
 	out.CostUSD = v.CostUSD
 	return out
 }

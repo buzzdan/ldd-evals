@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"example.com/go-mini/internal/models"
 	"example.com/go-mini/internal/repository"
 	"example.com/go-mini/internal/services"
 )
@@ -37,11 +38,12 @@ func (h *Handler) trace(w http.ResponseWriter, traceID string) {
 	w.Header().Set("X-Trace", traceID)
 }
 
-// Routes registers the handlers on mux.
-func Routes(mux *http.ServeMux, store repository.Store, svc *services.DeviceService) {
+// Routes registers the handlers on mux; the mutating routes run only when
+// grants allow writes.
+func Routes(mux *http.ServeMux, store repository.Store, svc *services.DeviceService, grants models.Grants) {
 	h := NewHandler(store)
 	mux.HandleFunc("GET /status", Status(store))
 	mux.HandleFunc("GET /devices", h.List)
-	mux.HandleFunc("POST /devices", Register(store))
-	mux.HandleFunc("POST /heartbeat", Heartbeat(svc))
+	mux.HandleFunc("POST /devices", requireWrite(grants, Register(store)))
+	mux.HandleFunc("POST /heartbeat", requireWrite(grants, Heartbeat(svc)))
 }

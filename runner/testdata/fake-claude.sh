@@ -18,6 +18,17 @@ done
 if [[ "$mode" == "judge" ]]; then
   cat >/dev/null
   verdict="${FAKE_JUDGE_VERDICT:-PASS}"
+  # $FAKE_JUDGE_VERDICTS ("PASS,FAIL,PASS") answers one verdict per call in
+  # order, the last repeating; the call count lives in $FAKE_JUDGE_COUNT_FILE.
+  if [[ -n "${FAKE_JUDGE_VERDICTS:-}" ]]; then
+    count=0
+    [[ -f "${FAKE_JUDGE_COUNT_FILE:?set FAKE_JUDGE_COUNT_FILE with FAKE_JUDGE_VERDICTS}" ]] && count=$(<"$FAKE_JUDGE_COUNT_FILE")
+    IFS=, read -r -a sequence <<< "$FAKE_JUDGE_VERDICTS"
+    last=$(( ${#sequence[@]} - 1 ))
+    idx=$(( count < last ? count : last ))
+    verdict="${sequence[$idx]}"
+    echo $(( count + 1 )) > "$FAKE_JUDGE_COUNT_FILE"
+  fi
   printf '{"type":"result","subtype":"success","is_error":false,"result":"The focus text satisfies the criteria.\\nVERDICT: %s","total_cost_usd":0.001,"duration_ms":10,"num_turns":1}\n' "$verdict"
   exit 0
 fi
