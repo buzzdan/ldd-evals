@@ -17,6 +17,10 @@ Answer from the FOCUS file only. PASS requires ALL of:
    into a default.
 4. If nothing in the constructor can fail any more, it does not return an
    error (R2 Fix pattern: no error return once nothing can fail).
+   A constructor that applies functional options and returns `errors.Join` of
+   what the options recorded (an option handed nil records an error instead of
+   storing it) is a construction failure, not a nil check in a method: it
+   satisfies this item.
 The shallow fix — moving `if sink == nil { return nil, err }` into NewReporter
 while keeping `*Sink` parameters and a `*Reporter` return — is FAIL: nil is
 still representable, just rejected.
