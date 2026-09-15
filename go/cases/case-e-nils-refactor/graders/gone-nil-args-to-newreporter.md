@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'NewReporter\([^)]*\bnil\b'
+pattern: 'NewReporter\(\s*(?:[^(),]*(?:\([^()]*\))?[^(),]*,\s*)*nil\b'
 match: count:0
 target: files
 ---
