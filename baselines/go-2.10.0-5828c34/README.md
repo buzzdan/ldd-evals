@@ -10,6 +10,8 @@ container (Linux), **Claude Code CLI 2.1.267**, agent sessions started with
 `--setting-sources project,local` so no user-level hook or plugin reached them (every
 trace has zero `hook_started` events).
 
+*Superseded, 2026-09-15: [`go-2.11.0-c78b55f`](../go-2.11.0-c78b55f/README.md) is the reference from the close of Phase 2 on; its README compares every case with this one.*
+
 This baseline replaces go-2.10.0-681fdb0 as the reference for Phase 2. It exists because the
 behavioral re-run of the generated plugin from a developer machine was inconclusive (leaked
 user hooks, then a different CLI version, OS and day); both baselines now come from the
