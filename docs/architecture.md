@@ -23,32 +23,38 @@ keeps a plugin clone at about 2 MB.
   plugin commit and version the run measured. A local run records the plugin
   checkout's HEAD; CI checks out the plugin repository at a given ref first.
 - **The copy.** The built-in `claude plugin eval` gate expects cases below the
-  plugin directory. The `go:cases` task copies the suite into `<plugin>/evals/`,
-  a path the plugin repository ignores, so nothing is committed or shipped there.
+  plugin directory. The `go:cases` and `py:cases` tasks copy their suite into
+  `<plugin>/evals/`, a path the plugin repository ignores, so nothing is
+  committed or shipped there.
 - **The hand-off.** The plugin repository's `scripts/evals.sh` clones this
   repository into an ignored `.evals/` directory and calls `task go:run` with
   `PLUGIN` set to its own plugin directory.
 - **Baseline naming.** `baselines/<lang>-<plugin version>-<plugin sha7>/`. One
   directory per plugin state that becomes a reference.
 - **Manifest ids.** `<lang>/violations.yaml` lists the planted violations and
-  controls. The same id set is meant to appear in every language with
-  language-specific anchors.
+  controls. The same id set appears in every language with language-specific
+  anchors: `py/violations.yaml` carries go-mini's 149 ids over py-mini, and a
+  comment on an entry says where the disease had to change with the language.
+- **Suite defaults.** A suite's `cases/suite.yaml` names the source and test
+  globs the runner's directory focus filters with; the Go suite names none and
+  keeps the runner's Go default.
 
 ## A run
 
-`task go:run TIER=<tier> CAP=<usd> PLUGIN=<plugin dir>` builds the runner,
-copies the suite below the plugin, and runs `ldd-eval run` with the model pinned
-and the cost cap set. Results land in `results/go-<timestamp>/<tier>/` with one
-`result.json` and `trace.jsonl` per case run and one `aggregate-result.json`
-per tier.
+`task <lang>:run TIER=<tier> CAP=<usd> PLUGIN=<plugin dir>` (`go:run`, `py:run`)
+builds the runner, copies the suite below the plugin, and runs `ldd-eval run`
+with the model pinned and the cost cap set. Results land in
+`results/<lang>-<timestamp>/<tier>/` with one `result.json` and `trace.jsonl`
+per case run and one `aggregate-result.json` per tier.
 
 ## A baseline
 
-`task go:baseline OUT=<run dir> PLUGIN=<plugin dir>` promotes a run: it copies
-the verdicts, archives every trace into one `traces.tar.zst`, and writes a
-README stub with the pass-rate table pre-filled. `task go:regrade OUT=<baseline>
-TIER=<tier>` re-applies the current graders to the recorded traces after the
-archive is unpacked beside the verdicts. Graders that read the scaffold tree
+`task <lang>:baseline OUT=<run dir> PLUGIN=<plugin dir>` promotes a run: it
+copies the verdicts, archives every trace into one `traces.tar.zst`, and writes
+a README stub with the pass-rate table pre-filled (`go-…` for the Go suite,
+`python-…` for the Python one). `task <lang>:regrade OUT=<baseline> TIER=<tier>`
+re-applies the current graders to the recorded traces after the archive is
+unpacked beside the verdicts. Graders that read the scaffold tree
 report "needs the kept scaffold" from a clone, because scaffolds are not
 committed.
 
