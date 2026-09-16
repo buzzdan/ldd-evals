@@ -4,7 +4,7 @@
 # the fixture's unrelated plants do not fail the case), rung-0 parse test,
 # tests/lint green, and the hidden black-box suite as the behavior oracle.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../postcheck/lib.sh"
+. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint

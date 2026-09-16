@@ -2,7 +2,7 @@
 # Case E postcheck: path-scoped R2 oracles in internal/report, the R6 guard
 # rail (no new Protocol), tests/lint green, black-box suite.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../postcheck/lib.sh"
+. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint

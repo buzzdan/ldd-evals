@@ -2,7 +2,7 @@
 # Case A postcheck: behavior preserved, lint green, the retention rule has one
 # owner, the new type answers R2's falsifying questions, rung-0 test exists.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../postcheck/lib.sh"
+. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint

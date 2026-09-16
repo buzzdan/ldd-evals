@@ -291,17 +291,37 @@ ratchet_nonincreasing() {
 	return $bad
 }
 
-# max_pkgs_touched_per_commit — over the commits after the base, the largest
-# number of distinct package directories whose production modules one commit
-# changed. Prints the number (0 when there are no commits).
-max_pkgs_touched_per_commit() {
-	local c n max=0
-	for c in $(git -C "$EVAL_DIR" rev-list HEAD "^$(base_commit)"); do
+# _changes_code <commit> <file> — true when <commit>'s diff of <file> adds or
+# removes at least one line that is neither blank nor a comment line. A commit
+# that only rewrites comments (a comment-critic fixup across the tree) is not a
+# code change in the packages it wrote in.
+_changes_code() {
+	git -C "$EVAL_DIR" diff-tree --no-commit-id -r -p -U0 "$1" -- "$2" |
+		grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' |
+		sed -E 's/^[+-][[:space:]]*//' |
+		grep -qvE '^$|^#'
+}
+
+# pkgs_touched_per_commit — one line per commit after the base, oldest first:
+# short hash, the number of distinct package directories whose production
+# modules that commit changed in code (comment-only and blank-line edits do not
+# count), and the subject.
+pkgs_touched_per_commit() {
+	local c n f
+	for c in $(git -C "$EVAL_DIR" rev-list --reverse HEAD "^$(base_commit)"); do
 		n=$(git -C "$EVAL_DIR" diff-tree --no-commit-id --name-only -r "$c" |
-			grep -E '\.py$' | grep -vE '(^|/)test_[^/]*\.py$' | xargs -r -n1 dirname | sort -u | wc -l)
-		((n > max)) && max=$n
+			grep -E '\.py$' | grep -vE '(^|/)test_[^/]*\.py$' |
+			while IFS= read -r f; do _changes_code "$c" "$f" && dirname "$f"; done |
+			sort -u | wc -l | tr -d ' ')
+		printf '  %s  %3d  %s\n' "$(git -C "$EVAL_DIR" rev-parse --short "$c")" "$n" \
+			"$(git -C "$EVAL_DIR" log -1 --format=%s "$c")"
 	done
-	echo "$max"
+}
+
+# max_pkgs_touched_per_commit — the largest package count pkgs_touched_per_commit
+# prints (0 when there are no commits).
+max_pkgs_touched_per_commit() {
+	pkgs_touched_per_commit | awk 'BEGIN { m = 0 } { if ($2 + 0 > m) m = $2 + 0 } END { print m }'
 }
 
 # ── the hidden top rung ──────────────────────────────────────────────────────

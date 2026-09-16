@@ -2,7 +2,7 @@
 # Case B postcheck: behavior preserved, lint green, one owner for the port
 # range, a new type owning the trio in transport, no suppressions.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../postcheck/lib.sh"
+. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint

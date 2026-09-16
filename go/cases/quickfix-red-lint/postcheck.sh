@@ -6,7 +6,7 @@
 #   4. no _test.go lost an assertion line versus postcheck/assertion-counts.txt
 set -uo pipefail
 here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-. "$here/../postcheck/lib.sh"
+. "$here/../../postcheck/lib.sh"
 
 if ! cmp -s "$EVAL_DIR/.golangci.yaml" "$LDD_POSTCHECK_DIR/golangci.orig.yaml"; then
 	diff -u "$LDD_POSTCHECK_DIR/golangci.orig.yaml" "$EVAL_DIR/.golangci.yaml" | head -n 40 || true
