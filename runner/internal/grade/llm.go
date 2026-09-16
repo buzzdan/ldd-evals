@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -23,12 +24,63 @@ const (
 	focusFiles
 )
 
+// ErrBadSourceGlob is returned for a source or test glob path.Match rejects.
+var ErrBadSourceGlob = errors.New("grade: src_glob and test_glob must be valid path.Match patterns over a file name")
+
+// SourceFilter names, as path.Match globs over a file's base name, which
+// files of a directory are source files and which of those are tests. A
+// directory focus renders the source files that are not tests. The zero
+// value is not usable; DefaultSourceFilter is the Go suite's.
+type SourceFilter struct {
+	src  string
+	test string
+}
+
+// DefaultSourceFilter is the filter every case used before suites could name
+// their own: Go source files, tests by the _test.go suffix.
+func DefaultSourceFilter() SourceFilter { return SourceFilter{src: "*.go", test: "*_test.go"} }
+
+// NewSourceFilter validates two globs; an empty glob keeps the default's.
+func NewSourceFilter(src, test string) (SourceFilter, error) {
+	f := DefaultSourceFilter()
+	if s := strings.TrimSpace(src); s != "" {
+		f.src = s
+	}
+	if t := strings.TrimSpace(test); t != "" {
+		f.test = t
+	}
+	for _, g := range []string{f.src, f.test} {
+		if _, err := path.Match(g, "x"); err != nil {
+			return SourceFilter{}, fmt.Errorf("%w: %q: %w", ErrBadSourceGlob, g, err)
+		}
+	}
+	return f, nil
+}
+
+// IsSource reports whether a file name is a non-test source file.
+func (f SourceFilter) IsSource(name string) bool {
+	src, _ := path.Match(f.src, name)
+	test, _ := path.Match(f.test, name)
+	return src && !test
+}
+
+// Src is the source glob.
+func (f SourceFilter) Src() string { return f.src }
+
+// Test is the test glob.
+func (f SourceFilter) Test() string { return f.test }
+
+// String renders the filter for detail messages.
+func (f SourceFilter) String() string { return f.src + " minus " + f.test }
+
 // Focus names the text the judge reads: the final assistant message, one
 // file from the scaffold dir, or several files rendered one after another
-// under their paths.
+// under their paths. A directory among the paths stands for the files the
+// focus's SourceFilter keeps.
 type Focus struct {
-	kind  focusKind
-	paths []string
+	kind   focusKind
+	paths  []string
+	filter SourceFilter
 }
 
 // FocusLastMessage is the default focus.
@@ -46,7 +98,8 @@ func FocusFile(path string) (Focus, error) {
 // FocusFiles focuses the judge on several paths relative to the scaffold dir,
 // rendered in order, each file under a "### <path>" heading, so one judge can
 // check that concepts landed in the right file. A path may be a directory,
-// which stands for its non-test .go files.
+// which stands for its non-test source files under the default (Go) filter;
+// WithSources swaps the filter.
 func FocusFiles(paths []string) (Focus, error) {
 	if len(paths) == 0 {
 		return Focus{}, fmt.Errorf("%w: files focus needs at least one path", ErrBadFocus)
@@ -59,7 +112,14 @@ func FocusFiles(paths []string) (Focus, error) {
 		}
 		clean = append(clean, rel)
 	}
-	return Focus{kind: focusFiles, paths: clean}, nil
+	return Focus{kind: focusFiles, paths: clean, filter: DefaultSourceFilter()}, nil
+}
+
+// WithSources returns the focus with the filter a directory path expands
+// through. Only a files focus reads it.
+func (f Focus) WithSources(filter SourceFilter) Focus {
+	f.filter = filter
+	return f
 }
 
 func relativePath(path string) (string, error) {
@@ -95,7 +155,7 @@ func (f Focus) text(s Subject) (string, error) {
 	case focusFiles:
 		var b strings.Builder
 		for _, p := range f.paths {
-			files, err := expandFocusPath(s.Dir, p)
+			files, err := expandFocusPath(s.Dir, p, f.filter)
 			if err != nil {
 				return "", err
 			}
@@ -116,11 +176,11 @@ func (f Focus) text(s Subject) (string, error) {
 }
 
 // expandFocusPath returns the files a focus path names: the file itself, or,
-// for a directory, its non-test .go files in name order. A refactor is free to
-// move a concept into a new file of the package it belongs to; a directory
-// focus keeps the judge looking at the package, not at a filename the agent
-// may rightly have deleted.
-func expandFocusPath(root, rel string) ([]string, error) {
+// for a directory, the non-test source files the filter keeps, in name order.
+// A refactor is free to move a concept into a new file of the package it
+// belongs to; a directory focus keeps the judge looking at the package, not
+// at a filename the agent may rightly have deleted.
+func expandFocusPath(root, rel string, filter SourceFilter) ([]string, error) {
 	info, err := os.Stat(filepath.Join(root, rel))
 	if err != nil {
 		return nil, fmt.Errorf("read focus file: %w", err)
@@ -134,14 +194,13 @@ func expandFocusPath(root, rel string) ([]string, error) {
 	}
 	var files []string
 	for _, e := range entries {
-		name := e.Name()
-		if e.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+		if e.IsDir() || !filter.IsSource(e.Name()) {
 			continue
 		}
-		files = append(files, filepath.Join(rel, name))
+		files = append(files, filepath.Join(rel, e.Name()))
 	}
 	if len(files) == 0 {
-		return nil, fmt.Errorf("read focus dir: %s holds no non-test .go files", rel)
+		return nil, fmt.Errorf("read focus dir: %s holds no non-test source files (%s)", rel, filter)
 	}
 	return files, nil
 }

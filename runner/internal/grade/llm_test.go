@@ -303,3 +303,63 @@ func TestParseVerdict_Error(t *testing.T) {
 		}
 	}
 }
+
+func TestSourceFilter(t *testing.T) {
+	t.Parallel()
+	def := grade.DefaultSourceFilter()
+	if !def.IsSource("a.go") || def.IsSource("a_test.go") || def.IsSource("a.py") || def.IsSource("notes.md") {
+		t.Errorf("default filter: want Go sources without tests, got %s", def)
+	}
+	py, err := grade.NewSourceFilter("*.py", "test_*.py")
+	if err != nil {
+		t.Fatalf("NewSourceFilter: %v", err)
+	}
+	if !py.IsSource("device.py") || py.IsSource("test_device.py") || py.IsSource("device.go") {
+		t.Errorf("python filter: got %s", py)
+	}
+	if py.Src() != "*.py" || py.Test() != "test_*.py" || py.String() != "*.py minus test_*.py" {
+		t.Errorf("accessors = %q %q %q", py.Src(), py.Test(), py.String())
+	}
+	// An empty glob keeps the default's half.
+	half, err := grade.NewSourceFilter("*.py", "")
+	if err != nil {
+		t.Fatalf("NewSourceFilter(half): %v", err)
+	}
+	if half.Test() != "*_test.go" {
+		t.Errorf("empty test glob = %q, want the default", half.Test())
+	}
+	if _, err := grade.NewSourceFilter("[", ""); !errors.Is(err, grade.ErrBadSourceGlob) {
+		t.Errorf("bad glob error = %v, want ErrBadSourceGlob", err)
+	}
+}
+
+func TestLLM_Grade_DirFocusHonoursTheSourceFilter(t *testing.T) {
+	useFakeClaude(t)
+	judge, err := grade.NewJudge("fake-judge")
+	if err != nil {
+		t.Fatalf("NewJudge: %v", err)
+	}
+	tree := writeTree(t, map[string]string{
+		"pkg/b.py":      "# b\n",
+		"pkg/a.py":      "# a\n",
+		"pkg/test_a.py": "# test\n",
+		"pkg/a.go":      "package pkg\n",
+	})
+	py, _ := grade.NewSourceFilter("*.py", "test_*.py")
+	dirFocus, _ := grade.FocusFiles([]string{"pkg"})
+	g, _ := grade.NewLLM("art", "c", "", dirFocus.WithSources(py))
+	out := g.Grade(context.Background(), grade.Subject{Dir: tree, OutDir: t.TempDir(), Judge: judge})
+	if !out.Passed {
+		t.Fatalf("outcome = %+v, want PASS from the fake judge", out)
+	}
+	// The same tree under the default filter renders only the Go file.
+	goG, _ := grade.NewLLM("art", "c", "", dirFocus)
+	if out := goG.Grade(context.Background(), grade.Subject{Dir: tree, OutDir: t.TempDir(), Judge: judge}); !out.Passed {
+		t.Fatalf("default filter outcome = %+v, want PASS", out)
+	}
+	// A directory with no source under the filter fails before the judge.
+	onlyTests := writeTree(t, map[string]string{"pkg/test_a.py": "# test\n"})
+	if out := g.Grade(context.Background(), grade.Subject{Dir: onlyTests}); out.Passed || !strings.Contains(out.Detail, "no non-test source files (*.py minus test_*.py)") {
+		t.Errorf("empty dir outcome = %+v, want a read-focus failure naming the filter", out)
+	}
+}

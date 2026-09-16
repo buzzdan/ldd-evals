@@ -36,6 +36,10 @@ var ErrNoGraders = errors.New("evalcase: case has no graders")
 // ErrBadValue is returned for a non-positive runs/max_turns/timeout_seconds.
 var ErrBadValue = errors.New("evalcase: runs, max_turns and timeout_seconds must be > 0")
 
+// suiteFile, beside the case directories, carries the defaults every case of
+// a suite shares; today that is the source and test globs.
+const suiteFile = "suite.yaml"
+
 // Case is one loaded, validated eval case.
 type Case struct {
 	Name               string
@@ -52,7 +56,11 @@ type Case struct {
 	Postcheck          string
 	Tier               string
 	Notes              string
-	Graders            []grade.Grader
+	// Sources tells a directory focus which files are source and which are
+	// tests; the suite's suite.yaml sets it, case.yaml may override it, and
+	// the default is Go's so the Go suite's verdicts do not move.
+	Sources grade.SourceFilter
+	Graders []grade.Grader
 }
 
 type promptFront struct {
@@ -74,6 +82,15 @@ type caseYAML struct {
 	Postcheck string `yaml:"postcheck"`
 	Tier      string `yaml:"tier"`
 	Notes     string `yaml:"notes"`
+	SrcGlob   string `yaml:"src_glob"`
+	TestGlob  string `yaml:"test_glob"`
+}
+
+// suiteYAML is the optional <evals-dir>/suite.yaml: the globs a directory
+// focus filters with, as path.Match patterns over a file's base name.
+type suiteYAML struct {
+	SrcGlob  string `yaml:"src_glob"`
+	TestGlob string `yaml:"test_glob"`
 }
 
 // Broken is a case directory that failed to load. Dir is the directory's
@@ -131,6 +148,9 @@ func Load(caseDir string) (Case, error) {
 	if err != nil {
 		return Case{}, err
 	}
+	if err := c.applySuiteYAML(); err != nil {
+		return Case{}, err
+	}
 	if err := c.applyCaseYAML(); err != nil {
 		return Case{}, err
 	}
@@ -172,6 +192,7 @@ func (fm promptFront) toCase(caseDir, body string) (Case, error) {
 		Model:              strings.TrimSpace(fm.Model),
 		AppendSystemPrompt: fm.AppendSystemPrompt,
 		ScaffoldScript:     filepath.Join(filepath.Dir(caseDir), defaultScaffold),
+		Sources:            grade.DefaultSourceFilter(),
 	}
 	if c.Name == "" {
 		c.Name = filepath.Base(caseDir)
@@ -187,6 +208,24 @@ func orDefault(v *int, def int) int {
 		return def
 	}
 	return *v
+}
+
+// applySuiteYAML reads the suite's defaults from the case dir's parent; a
+// suite without the file keeps the Go filter.
+func (c *Case) applySuiteYAML() error {
+	path := filepath.Join(filepath.Dir(c.Dir), suiteFile)
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("evalcase: %w", err)
+	}
+	var sy suiteYAML
+	if err := yaml.Unmarshal(data, &sy); err != nil {
+		return fmt.Errorf("evalcase: %s: %w", path, err)
+	}
+	return c.setSources(path, sy.SrcGlob, sy.TestGlob)
 }
 
 func (c *Case) applyCaseYAML() error {
@@ -208,6 +247,27 @@ func (c *Case) applyCaseYAML() error {
 		c.Postcheck = c.resolve(cy.Postcheck)
 	}
 	c.Tier, c.Notes = strings.TrimSpace(cy.Tier), strings.TrimSpace(cy.Notes)
+	return c.setSources(filepath.Join(c.Dir, "case.yaml"), cy.SrcGlob, cy.TestGlob)
+}
+
+// setSources replaces the filter's globs with the non-empty ones given; an
+// invalid glob names the file it came from.
+func (c *Case) setSources(from, src, test string) error {
+	if strings.TrimSpace(src) == "" && strings.TrimSpace(test) == "" {
+		return nil
+	}
+	cur := c.Sources
+	if strings.TrimSpace(src) == "" {
+		src = cur.Src()
+	}
+	if strings.TrimSpace(test) == "" {
+		test = cur.Test()
+	}
+	f, err := grade.NewSourceFilter(src, test)
+	if err != nil {
+		return fmt.Errorf("evalcase: %s: %w", from, err)
+	}
+	c.Sources = f
 	return nil
 }
 
@@ -223,7 +283,7 @@ func (c *Case) loadGraders() error {
 	if _, err := os.Stat(c.ScaffoldScript); err != nil {
 		return fmt.Errorf("evalcase: case %s scaffold script: %w", c.Name, err)
 	}
-	graders, err := loadGraderFiles(filepath.Join(c.Dir, "graders"))
+	graders, err := loadGraderFiles(filepath.Join(c.Dir, "graders"), c.Sources)
 	if err != nil {
 		return fmt.Errorf("evalcase: case %s: %w", c.Name, err)
 	}

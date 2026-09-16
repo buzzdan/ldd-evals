@@ -2,7 +2,7 @@
 
 Stop-gap runner for the suites under `<lang>/cases/` while `claude plugin eval` is gated for this org.
 Cases use plugin-eval's exact file format (`prompt.md` frontmatter + body, `graders/*.md`);
-only `case.yaml` (`scaffold_script`, `postcheck`, `tier`) is ours. **When the gate opens, delete
+only `case.yaml` (`scaffold_script`, `postcheck`, `tier`, `src_glob`, `test_glob`) and the optional suite-level `suite.yaml` are ours. **When the gate opens, delete
 `runner/` and keep the cases** — nothing in them depends on this module. The runner is
 language-neutral: a suite is any directory whose children are case directories.
 
@@ -46,7 +46,11 @@ Exit codes: 0 every case ≥ threshold · 1 some case below · 2 budget exceeded
   go-2.10.0-5828c34 were graded by a single vote.
   `focus` names what the judge reads: `last_message` (default), `{source: file, path: <rel>}`, or
   `{source: files, paths: [<rel>, …]}` which renders each file under a `### <path>` heading so one judge can
-  check that concepts landed in the right file (the `art-judge` graders of the refactor cases use it).
+  check that concepts landed in the right file (the `art-judge` graders of the refactor cases use it). A path
+  that is a directory stands for its non-test source files, chosen by the suite's source and test globs
+  (`path.Match` patterns over the file's base name): `<evals-dir>/suite.yaml` sets `src_glob` and `test_glob`
+  for every case, a case's `case.yaml` may override either, and the default is Go's (`*.go` minus `*_test.go`),
+  so a suite that names nothing grades exactly as before.
 - `is_error` results get a failing synthetic `execution` grader; timeouts/incomplete traces set `error` and skip grading.
   The agent runs with `IS_SANDBOX=1` because `--permission-mode bypassPermissions` is refused for root without it
   (harmless for other users), and without `CLAUDE_AUTO_BACKGROUND_TASKS`: cloud sessions export that flag, and
