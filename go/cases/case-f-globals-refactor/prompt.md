@@ -2,7 +2,7 @@
 name: case-f-globals-refactor
 tags: [medium, refactor, logic-hunter, case-f]
 runs: 1
-max_turns: 150
+max_turns: 200
 timeout_seconds: 3600
 allowed_tools: [Bash, Read, Edit, Write, Grep, Glob, Agent, Skill]
 append_system_prompt: |
