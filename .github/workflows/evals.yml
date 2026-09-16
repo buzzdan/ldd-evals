@@ -43,6 +43,7 @@ jobs:
       - uses: arduino/setup-task@v2
         with:
           version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: golangci/golangci-lint-action@v7
         with:
           version: v2.8
@@ -59,6 +60,7 @@ jobs:
       - uses: arduino/setup-task@v2
         with:
           version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task go:manifest
       - run: task py:manifest
       - name: generated review graders match the manifest (both suites)
@@ -90,6 +92,7 @@ jobs:
       - uses: arduino/setup-task@v2
         with:
           version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: golangci/golangci-lint-action@v7
         with:
           version: v2.8
