@@ -116,7 +116,7 @@
   rule: R3
   questions: [lint]
   files: [internal/services/device_service.py]
-  anchor: '^\s+return seconds$'
+  anchor: '^\s+return window  # noqa: RET504'
   expect:
     lint: { linter: RET504, action: FIX }
 
@@ -124,7 +124,7 @@
   rule: R3
   questions: [lint]
   files: [internal/services/device_service.py]
-  anchor: '^\s+else:$'
+  anchor: 'else:  # noqa: RET505'
   expect:
     lint: { linter: RET505, action: FIX, also: [PLR5501] }
 
@@ -181,7 +181,7 @@
   rule: R1
   questions: [Q5]
   files: [internal/services/device_service.py, internal/handlers/heartbeat.py]
-  anchor: 'raw: str, tenant: str, force: bool|raw, tenant, force\)'
+  anchor: '^\s+raw: str,$|raw, tenant, force\)'
   expect:
     review: { category: "🔴", cluster: "process_heartbeat", fix: "Introduce Parameter Object" }
 
@@ -369,6 +369,7 @@
   expect:
     review:   { category: "🔴", fix: "Replace Primitive with Domain Type" }
     refactor: { gone: '"@" (not )?in ', count_max: 1 }
+    lint:     { linter: PLR2004, route: R1, note: "the literal is the predicate's whole vocabulary; a named constant is not the fix" }
 
 - id: R1.Q3.tags-loop
   rule: R1
@@ -378,6 +379,7 @@
   expect:
     review:   { category: "🔴", fix: "Extract Collection Type" }
     refactor: { present: '^class \w+\(list\[str\]\)' }
+    lint:     { linter: SIM110, route: R1, note: "the any() rewrite ruff offers hides the missing collection type" }
 
 - id: R1.Q3.raw-channel-string
   rule: R1
@@ -433,7 +435,7 @@
 - id: R1.Q1.settings-blob
   rule: R1
   questions: [Q1]
-  files: [internal/models/job.py, internal/jobs/scheduler.py, internal/services/device_service.py, internal/services/snapshot_service.py]
+  files: [internal/models/job.py, internal/jobs/registry.py, internal/services/device_service.py, internal/services/snapshot_service.py]
   anchor: 'dict\[str, Any\]|job\.settings\["region"\]'
   expect:
     review: { category: "🔴", fix: "Replace Primitive with Domain Type" }
@@ -582,7 +584,7 @@
   anchor: '^def _normalize_tags\('
   expect:
     review: { category: "🟡", fix: "Extract Leaf Type" }
-    lint:   { linter: C901, route: R3 }
+    lint:   { linter: "-", route: R3, note: "cyclomatic 7 under ruff's threshold of 8; complexipy's cognitive count is the postcheck's measure" }
 
 - id: CTRL.R3.orchestrator
   rule: R3
@@ -811,7 +813,7 @@
 - id: CTRL.R6.mem-store-in-production
   rule: R6
   control: true
-  files: [cmd/svc/main.py, internal/repository/mem_store.py]
+  files: [svc/__main__.py, internal/repository/mem_store.py]
   anchor: 'MemStore'
   symbol: 'MemStore'
   mention_ok: true
@@ -943,9 +945,9 @@
 - id: CTRL.R8.main-composition-root
   rule: R8
   control: true
-  files: [cmd/svc/main.py]
+  files: [svc/__main__.py]
   anchor: 'logging\.basicConfig\(|env\.load\(\)|os\.environ\.get\("(PORT|WEBHOOK_URL|STORE_PATH)"'
-  symbol: 'cmd/svc/main\.py'
+  symbol: 'svc/__main__\.py'
   mention_ok: true
   expect: { review: { findings: 0, note: "globals at the composition root are the pragmatic endpoint" } }
 
@@ -1099,7 +1101,7 @@
   rule: R10
   questions: [lint]
   files: [internal/services/device_service.py, internal/services/notify.py]
-  anchor: 'except Exception:  # noqa: BLE001, S110, SIM105'
+  anchor: 'except Exception:  # noqa: BLE001, S110'
   expect:
     lint: { linter: BLE001, action: FIX, also: [S110, SIM105] }
 
@@ -1123,7 +1125,7 @@
 - id: CTRL.R10.main-jitter-sleep
   rule: R10
   control: true
-  files: [cmd/svc/main.py]
+  files: [svc/__main__.py]
   anchor: 'time\.sleep\(random\.randint\(0, 19\) / 1000\)'
   symbol: 'random\.randint'
   expect: { review: { findings: 0 } }
@@ -1239,7 +1241,7 @@
   rule: R12
   questions: [Q1]
   files: [internal/services/cache.py, internal/models/grants.py, internal/models/schedule.py, internal/services/snapshot_service.py]
-  anchor: 'return (self\.items|self\._perms|self\._days|self\.taken)$'
+  anchor: 'return (self\.items|self\._perms|self\._days|self\._taken)$'
   expect:
     review:   { category: "🔴", fix: "Copy on the Way Out / Encapsulate Collection" }
     refactor: { gone: 'return self\.items$', count_max: 0 }
@@ -1308,6 +1310,7 @@
   expect:
     review:   { category: "🔴", cluster: "retention", fix: "Delete re-validation of composed types" }
     refactor: { gone: 'days > 0 and days <= 365', count_max: 0 }
+    lint:     { linter: PLR1716, route: R2, note: "the chained-comparison rewrite is not the fix; the re-check goes" }
 
 - id: CASE-A.zero-sentinel
   rule: R1
