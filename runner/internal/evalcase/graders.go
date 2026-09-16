@@ -42,14 +42,14 @@ type graderFront struct {
 
 // loadGraderFiles parses every graders/*.md, sorted by filename. A missing
 // graders dir yields no graders (the case may rely on postcheck alone).
-func loadGraderFiles(dir string) ([]grade.Grader, error) {
+func loadGraderFiles(dir string, sources grade.SourceFilter) ([]grade.Grader, error) {
 	files, err := filepath.Glob(filepath.Join(dir, "*.md"))
 	if err != nil {
 		return nil, fmt.Errorf("glob graders: %w", err)
 	}
 	graders := make([]grade.Grader, 0, len(files))
 	for _, f := range files {
-		g, lerr := LoadGrader(f)
+		g, lerr := LoadGraderWithSources(f, sources)
 		if lerr != nil {
 			return nil, lerr
 		}
@@ -58,8 +58,15 @@ func loadGraderFiles(dir string) ([]grade.Grader, error) {
 	return graders, nil
 }
 
-// LoadGrader parses one graders/<name>.md into a grader named after the file.
+// LoadGrader parses one graders/<name>.md into a grader named after the file,
+// with the Go source filter for directory focuses.
 func LoadGrader(file string) (grade.Grader, error) {
+	return LoadGraderWithSources(file, grade.DefaultSourceFilter())
+}
+
+// LoadGraderWithSources is LoadGrader with the case's source filter, which an
+// llm grader's directory focus expands through.
+func LoadGraderWithSources(file string, sources grade.SourceFilter) (grade.Grader, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("grader: %w", err)
@@ -73,14 +80,14 @@ func LoadGrader(file string) (grade.Grader, error) {
 		return nil, fmt.Errorf("grader %s: %w", file, err)
 	}
 	name := strings.TrimSuffix(filepath.Base(file), ".md")
-	g, err := fm.build(name, doc.Body())
+	g, err := fm.build(name, doc.Body(), sources)
 	if err != nil {
 		return nil, fmt.Errorf("grader %s: %w", file, err)
 	}
 	return g, nil
 }
 
-func (fm graderFront) build(name, body string) (grade.Grader, error) {
+func (fm graderFront) build(name, body string, sources grade.SourceFilter) (grade.Grader, error) {
 	switch strings.TrimSpace(fm.Type) {
 	case "regex":
 		return wrap(grade.NewRegex(grade.RegexSpec{Name: name, Pattern: fm.Pattern, Flags: fm.Flags, Match: fm.Match, Target: fm.Target}))
@@ -91,7 +98,7 @@ func (fm graderFront) build(name, body string) (grade.Grader, error) {
 	case "file_exists":
 		return wrap(grade.NewFileExists(name, fm.Path))
 	case "llm":
-		return fm.buildLLM(name, body)
+		return fm.buildLLM(name, body, sources)
 	default:
 		return nil, fmt.Errorf("%w: got %q", ErrBadGraderType, fm.Type)
 	}
@@ -133,12 +140,12 @@ func (fm graderFront) buildToolOrder(name string) (grade.Grader, error) {
 	return wrap(grade.NewToolOrder(name, before, after))
 }
 
-func (fm graderFront) buildLLM(name, body string) (grade.Grader, error) {
+func (fm graderFront) buildLLM(name, body string, sources grade.SourceFilter) (grade.Grader, error) {
 	focus, err := parseFocus(fm.Focus)
 	if err != nil {
 		return nil, err
 	}
-	return wrap(grade.NewLLM(name, fm.Criteria, body, focus))
+	return wrap(grade.NewLLM(name, fm.Criteria, body, focus.WithSources(sources)))
 }
 
 // parseFocus accepts the scalar `last_message` (or nothing), the mapping

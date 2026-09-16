@@ -1,6 +1,7 @@
 package evalcase_test
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -353,5 +354,120 @@ func TestLoadGrader_Error(t *testing.T) {
 				t.Errorf("LoadGrader error = %v, want %v", err, tc.wantErr)
 			}
 		})
+	}
+}
+
+func TestLoad_SourcesDefaultToGo(t *testing.T) {
+	t.Parallel()
+	c, err := evalcase.Load(filepath.Join(suiteDir, "minimal"))
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if c.Sources != grade.DefaultSourceFilter() {
+		t.Errorf("Sources = %s, want the Go default", c.Sources)
+	}
+}
+
+func TestLoad_SuiteYAMLSetsSourcesAndCaseYAMLOverrides(t *testing.T) {
+	t.Parallel()
+	evalsDir, caseDir := scratchEvals(t, map[string]string{
+		"prompt.md":    minimalPrompt,
+		"graders/g.md": regexGrader,
+		"case.yaml":    "tier: cheap\ntest_glob: '*_test.py'\n",
+	})
+	if err := os.WriteFile(filepath.Join(evalsDir, "suite.yaml"), []byte("src_glob: '*.py'\ntest_glob: 'test_*.py'\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	c, err := evalcase.Load(caseDir)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	// suite.yaml gives the source glob; case.yaml replaces only the test glob.
+	if c.Sources.Src() != "*.py" || c.Sources.Test() != "*_test.py" {
+		t.Errorf("Sources = %s, want *.py minus *_test.py", c.Sources)
+	}
+	// A sibling case without case.yaml globs inherits the suite's.
+	sibling := filepath.Join(evalsDir, "sibling")
+	if err := os.MkdirAll(filepath.Join(sibling, "graders"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(sibling, "prompt.md"), []byte(minimalPrompt), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(sibling, "graders", "g.md"), []byte(regexGrader), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s, err := evalcase.Load(sibling)
+	if err != nil {
+		t.Fatalf("Load sibling: %v", err)
+	}
+	if s.Sources.Src() != "*.py" || s.Sources.Test() != "test_*.py" {
+		t.Errorf("sibling Sources = %s, want the suite's", s.Sources)
+	}
+}
+
+func TestLoad_BadSourceGlobIsAnError(t *testing.T) {
+	t.Parallel()
+	evalsDir, caseDir := scratchEvals(t, map[string]string{"prompt.md": minimalPrompt, "graders/g.md": regexGrader})
+	if err := os.WriteFile(filepath.Join(evalsDir, "suite.yaml"), []byte("src_glob: '['\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := evalcase.Load(caseDir); !errors.Is(err, grade.ErrBadSourceGlob) {
+		t.Errorf("Load error = %v, want ErrBadSourceGlob", err)
+	}
+	if err := os.WriteFile(filepath.Join(evalsDir, "suite.yaml"), []byte("src_glob: [not a mapping\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := evalcase.Load(caseDir); err == nil || !strings.Contains(err.Error(), "suite.yaml") {
+		t.Errorf("Load with a malformed suite.yaml = %v, want an error naming the file", err)
+	}
+}
+
+func TestLoadGraderWithSources_DirFocusUsesTheFilter(t *testing.T) {
+	t.Parallel()
+	grader := writeGrader(t, "---\ntype: llm\ncriteria: c\nfocus: { source: files, paths: [pkg] }\n---\n")
+	py, err := grade.NewSourceFilter("*.py", "test_*.py")
+	if err != nil {
+		t.Fatal(err)
+	}
+	g, err := evalcase.LoadGraderWithSources(grader, py)
+	if err != nil {
+		t.Fatalf("LoadGraderWithSources: %v", err)
+	}
+	llm, ok := g.(grade.LLM)
+	if !ok {
+		t.Fatalf("grader type = %T, want grade.LLM", g)
+	}
+	// Under the Python filter the directory renders the .py file; the missing
+	// judge is never reached because the focus text is built first, so we read
+	// it through the prompt the grader would send.
+	tree := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(tree, "pkg"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string]string{"a.py": "# a\n", "test_a.py": "# t\n", "a.go": "package a\n"} {
+		if err := os.WriteFile(filepath.Join(tree, "pkg", name), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	out := llm.Grade(context.Background(), grade.Subject{Dir: tree})
+	// No judge is configured, so grading fails at the judge step — which means
+	// the focus text was built, i.e. the directory held a source file.
+	if out.Passed || !strings.Contains(out.Detail, "judge") {
+		t.Errorf("outcome = %+v, want a judge-step failure after a successful focus read", out)
+	}
+	goGrader, err := evalcase.LoadGrader(grader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	onlyPy := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(onlyPy, "pkg"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(onlyPy, "pkg", "a.py"), []byte("# a\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if out := goGrader.Grade(context.Background(), grade.Subject{Dir: onlyPy}); out.Passed || !strings.Contains(out.Detail, "no non-test source files") {
+		t.Errorf("Go-filter grader over a Python-only dir = %+v, want an empty-dir failure", out)
 	}
 }
