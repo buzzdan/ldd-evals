@@ -11,7 +11,9 @@ echo "== the ratchet: env.Config references outside cmd/, per commit =="
 assert_ge "at least 3 commits after the scaffold base" "$(commits_since_base)" 3
 assert "env.Config references outside cmd/ never rise and end at 0" \
   ratchet_nonincreasing 'env\.Config\b' '*.go' ':(exclude)cmd/'
-assert_le "no commit touches non-test code in more than 2 packages (island + its caller)" \
+echo "== packages changed in code, per commit (comment-only edits do not count) =="
+pkgs_touched_per_commit
+assert_le "no commit changes non-test code in more than 2 packages (island + its caller)" \
   "$(max_pkgs_touched_per_commit)" 2
 
 echo "== islands are clean =="
