@@ -6,3 +6,7 @@ bin/
 # traces are archived in traces.tar.zst; unpacked copies and macOS AppleDouble files stay local
 baselines/**/trace.jsonl
 **/._*
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
