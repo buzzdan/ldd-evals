@@ -6,7 +6,11 @@
 #   4. the god file is either untouched or explicitly reported PREP-DEFERRED
 set -uo pipefail
 here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-. "$here/../../postcheck/lib.sh"
+# postcheck/lib.sh is two levels up in this repository (go/cases/<case>/) and one
+# level up when the suite is copied under <plugin>/evals/ for a run.
+for lib in "$here/../../postcheck/lib.sh" "$here/../postcheck/lib.sh"; do
+  [ -f "$lib" ] && { . "$lib"; break; }
+done
 
 assert_ge "prep commits after the scaffold base" "$(commits_since_base)" 1
 if [[ -n "$(git -C "$EVAL_DIR" status --porcelain --untracked-files=all)" ]]; then

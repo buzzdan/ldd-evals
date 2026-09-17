@@ -2,7 +2,12 @@
 # Case E postcheck: path-scoped R2 oracles in internal/report, the R6 guard
 # rail (no new interface), tests/lint green, black-box suite.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
+here="$(dirname "$(readlink -f "$0")")"
+# postcheck/lib.sh is two levels up in this repository (go/cases/<case>/) and one
+# level up when the suite is copied under <plugin>/evals/ for a run.
+for lib in "$here/../../postcheck/lib.sh" "$here/../postcheck/lib.sh"; do
+  [ -f "$lib" ] && { . "$lib"; break; }
+done
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint
