@@ -3,10 +3,12 @@ version: '3'
 # The Python suite. Paths are relative to the repository root, where task runs.
 # OUT names a run directory; each tier writes to OUT/<tier> so one directory
 # can hold a cheap and a medium run side by side, which is how a baseline is
-# laid out. PLUGIN arrives from the root Taskfile's include: the
-# python-linter-driven-development directory this run measures.
+# laid out.
 
 vars:
+  # The plugin directory this run measures: PLUGIN=<dir> on the command line,
+  # else the Python plugin in a sibling checkout of buzzdan/ai-coding-rules.
+  PLUGIN: '{{.PLUGIN | default (printf "%s/../ai-coding-rules/python-linter-driven-development" .ROOT_DIR)}}'
   TIER: '{{.TIER | default "cheap"}}'
   CAP: '{{.CAP | default "60"}}'
   OUT: '{{.OUT | default (now | date "20060102-150405" | printf "results/py-%s")}}'

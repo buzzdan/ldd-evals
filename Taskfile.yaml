@@ -3,19 +3,16 @@ version: '3'
 includes:
   go:
     taskfile: go/Taskfile.yaml
-    vars:
-      PLUGIN: '{{.GO_PLUGIN}}'
   py:
     taskfile: py/Taskfile.yaml
-    vars:
-      PLUGIN: '{{.PY_PLUGIN}}'
 
 vars:
-  # Path to the plugin directory a run measures. PLUGIN on the command line
-  # wins for either suite; otherwise each suite defaults to its own plugin in a
-  # sibling checkout of buzzdan/ai-coding-rules.
+  # Path to the plugin directory a run measures. Each suite's Taskfile defaults
+  # its own PLUGIN to the sibling checkout of buzzdan/ai-coding-rules and lets
+  # PLUGIN=<dir> on the command line win. The include must not set PLUGIN: a
+  # var passed through an include's vars block shadows the command line for
+  # every task in that suite, so PLUGIN=<dir> would be ignored.
   GO_PLUGIN: '{{.PLUGIN | default (printf "%s/../ai-coding-rules/go-linter-driven-development" .ROOT_DIR)}}'
-  PY_PLUGIN: '{{.PLUGIN | default (printf "%s/../ai-coding-rules/python-linter-driven-development" .ROOT_DIR)}}'
   # Agent model. Always pinned on the command line so a baseline names it.
   MODEL: '{{.MODEL | default "claude-sonnet-5"}}'
 
