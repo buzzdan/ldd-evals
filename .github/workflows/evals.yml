@@ -24,6 +24,16 @@ on:
         description: abort once cumulative agent and judge cost passes this
         required: true
         default: "5"
+      plugin:
+        description: plugin directory in ai-coding-rules to measure (the generic plugin runs any suite; the suite's cases take its command prefix)
+        required: true
+        default: go-linter-driven-development
+        type: choice
+        options: [go-linter-driven-development, python-linter-driven-development, linter-driven-development]
+      case:
+        description: optional glob over case names (e.g. trigger-go, 'case-e-*'); empty runs the whole tier
+        required: false
+        default: ""
 
 env:
   GO_VERSION: "1.24"
@@ -121,8 +131,9 @@ jobs:
           task ${{ inputs.language }}:run
           TIER=${{ inputs.tier }}
           CAP=${{ inputs.cost_cap_usd }}
-          OUT=results/${{ inputs.language }}-${{ inputs.plugin_ref }}-${{ github.run_id }}
-          PLUGIN=${{ github.workspace }}/ai-coding-rules/${{ inputs.language == 'py' && 'python-linter-driven-development' || 'go-linter-driven-development' }}
+          OUT=results/${{ inputs.language }}-${{ inputs.plugin }}-${{ inputs.plugin_ref }}-${{ github.run_id }}
+          PLUGIN=${{ github.workspace }}/ai-coding-rules/${{ inputs.plugin }}
+          CASE=${{ inputs.case }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -37,7 +37,11 @@ keeps a plugin clone at about 2 MB.
   repository into an ignored `.evals/` directory and calls `task go:run` with
   `PLUGIN` set to its own plugin directory.
 - **Baseline naming.** `baselines/<lang>-<plugin version>-<plugin sha7>/`. One
-  directory per plugin state that becomes a reference.
+  directory per plugin state that becomes a reference. The default name assumes
+  the plugin and the fixture share a language; when they do not — the generic
+  `linter-driven-development` plugin measured on go-mini — the name carries the
+  fixture instead, `generic-gomini-<version>-<sha7>`, given as `NAME` to the
+  baseline task, and `plugin.json` in the baseline records the plugin either way.
 - **Manifest ids.** `<lang>/violations.yaml` lists the planted violations and
   controls. The same id set appears in every language with language-specific
   anchors: `py/violations.yaml` carries go-mini's 149 ids over py-mini, and a
