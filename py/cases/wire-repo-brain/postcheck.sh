@@ -10,7 +10,7 @@
 #      never a diverged fork) — the cheap stand-in for a second idempotence run
 set -uo pipefail
 here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-. "$here/../postcheck/lib.sh"
+. "$here/../../postcheck/lib.sh"
 plugin_root="$(cd "$here/../.." && pwd)"
 
 gate="$EVAL_DIR/scripts/check-repo-brain.sh"

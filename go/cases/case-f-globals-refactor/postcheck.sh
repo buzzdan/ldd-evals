@@ -2,7 +2,7 @@
 # Case F postcheck: the ratchet over the commit history, clean islands, the
 # shallow fix rejected, end state, test payoff, tests/lint green, black-box.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../postcheck/lib.sh"
+. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint

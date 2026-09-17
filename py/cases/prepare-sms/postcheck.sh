@@ -6,7 +6,7 @@
 #   4. the god file is either untouched or explicitly reported PREP-DEFERRED
 set -uo pipefail
 here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-. "$here/../postcheck/lib.sh"
+. "$here/../../postcheck/lib.sh"
 
 assert_ge "prep commits after the scaffold base" "$(commits_since_base)" 1
 if [[ -n "$(git -C "$EVAL_DIR" status --porcelain --untracked-files=all)" ]]; then

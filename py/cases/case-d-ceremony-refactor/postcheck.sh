@@ -2,7 +2,7 @@
 # Case D postcheck: ReplicaCount is gone or untouched (never grown), tests and
 # lint green, black-box suite.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../postcheck/lib.sh"
+. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint
