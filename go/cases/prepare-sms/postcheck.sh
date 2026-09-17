@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# prepare-sms postcheck — runs in the kept scaffold after /go-ldd-prepare.
+# prepare-sms postcheck — runs in the kept scaffold after /{{cmd_prefix}}-prepare.
 #   1. ≥1 prep commit on top of the scaffold's base commit
 #   2. no SMS code landed in non-test Go files (prep reshapes; it never builds the feature)
 #   3. task test green after prep

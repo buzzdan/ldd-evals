@@ -25,7 +25,14 @@ keeps a plugin clone at about 2 MB.
 - **The copy.** The built-in `claude plugin eval` gate expects cases below the
   plugin directory. The `go:cases` and `py:cases` tasks copy their suite into
   `<plugin>/evals/`, a path the plugin repository ignores, so nothing is
-  committed or shipped there.
+  committed or shipped there. The copy is also where the plugin's command
+  prefix is written: the Go suite's prompts, graders, postchecks and scaffolds
+  name slash commands and the announcement line through the token
+  `{{cmd_prefix}}`, and the `go:cases` task replaces it with `CMD_PREFIX` —
+  read from the plugin's own `commands/` directory unless given on the command
+  line — so the same cases measure `go-linter-driven-development` (`go-ldd`)
+  and the generic `linter-driven-development` (`ldd`). The copied suite stays
+  concrete, which is what the gate and the runner read.
 - **The hand-off.** The plugin repository's `scripts/evals.sh` clones this
   repository into an ignored `.evals/` directory and calls `task go:run` with
   `PLUGIN` set to its own plugin directory.

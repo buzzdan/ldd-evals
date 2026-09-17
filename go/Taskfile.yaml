@@ -18,6 +18,13 @@ vars:
   # RESUME=1 reuses every run under OUT/<TIER> that already has a result.json.
   RESUME_FLAG: '{{if .RESUME}}--resume{{end}}'
   EVALS_DIR: '{{.PLUGIN}}/evals'
+  # The plugin's slash-command prefix (go-ldd, ldd, py-ldd). Case prompts and
+  # graders carry the token {{cmd_prefix}}; the cases task writes the real
+  # prefix into the copy under EVALS_DIR. Default: read from the plugin's own
+  # commands directory, so a run against another plugin built from the same
+  # core needs only PLUGIN=<dir>; CMD_PREFIX=<prefix> on the command line wins.
+  CMD_PREFIX:
+    sh: '{{if .CMD_PREFIX}}printf %s {{.CMD_PREFIX | shellQuote}}{{else}}ls {{.PLUGIN | shellQuote}}/commands | sed -n "s/-review\\.md$//p"{{end}}'
 
 tasks:
   cases:
@@ -25,6 +32,7 @@ tasks:
     cmds:
       - mkdir -p {{.EVALS_DIR}}
       - rsync -a --delete --exclude=/README.md go/cases/ go/scaffold go/postcheck go/fixture {{.EVALS_DIR}}/
+      - bash scripts/set-cmd-prefix.sh {{.EVALS_DIR}} {{.CMD_PREFIX}}
 
   manifest:
     desc: Check violations.yaml against the fixture

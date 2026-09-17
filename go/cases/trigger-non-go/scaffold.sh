@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Scaffold a tiny Python-only repository into <dest>: no go.mod, no .go files.
 # The trigger-non-go case checks that "implement X" here does NOT start the
-# go-ldd workflow.
+# {{cmd_prefix}} workflow.
 #
 # Usage: trigger-non-go/scaffold.sh <dest-dir>
 set -euo pipefail
