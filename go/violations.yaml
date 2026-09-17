@@ -420,8 +420,11 @@
   control: true
   files: [internal/models/tenant.go]
   anchor: 'func ParseTenant\(raw string\) \(Tenant, error\)'
-  symbol: 'ParseTenant'
-  expect: { review: { findings: 0, note: "must not be re-proposed" } }
+  # The control is the type: a report must not propose creating Tenant again. The
+  # fixture never calls ParseTenant at its boundaries (devices.go, heartbeat.go), so
+  # "wire ParseTenant" is a true finding and may be named; only a re-proposal fails.
+  symbol: '(?i)type Tenant\b|\b(introduce|create|add|define|extract|new)\b[^\n.]{0,40}\bTenant (type|struct|domain type)|Replace Primitive with Domain Type[^\n]{0,80}\bTenant\b|\bTenant\b[^\n]{0,60}Replace Primitive with Domain Type'
+  expect: { review: { findings: 0, note: "the type must not be re-proposed; routing raw tenants through ParseTenant is not a re-proposal" } }
 
 - id: CTRL.R1.region-type
   rule: R1

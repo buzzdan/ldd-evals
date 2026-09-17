@@ -7,11 +7,14 @@ This case is the negative control. Before the agent touched them,
 `internal/models/grants.go` held `Grants` (a small earned type whose methods
 `Has`/`All` are domain vocabulary; `requireWrite` in
 `internal/handlers/authz.go` guards the mutating routes with `Has`) plus the
-unreferenced `ReplicaCount` and `Name`, and `internal/handlers/trace.go` held a
-one-line `trace` helper with a comment stating a real reason (log lines joined
-to their request). They already read like art. The temptation the control
-measures is *adding* things: an interface, a wrapper type, an options struct, a
-new package, a rename that adds words.
+unreferenced `ReplicaCount` and `Name`, and `internal/handlers/trace.go` held,
+as given: the `Handler` struct over the store, its `NewHandler` constructor, its
+`List` handler, a one-line `trace` method with a comment stating a real reason
+(log lines joined to their request), and `Routes`, which builds the `Handler`
+and mounts it. Every one of those is the fixture's, not the agent's, and is not
+new structure. They already read like art. The temptation the control measures
+is *adding* things: an interface, a wrapper type, an options struct, a new
+package, a rename that adds words.
 
 Look at the two packages as they are now and PASS only if all four hold:
 
@@ -19,7 +22,9 @@ Look at the two packages as they are now and PASS only if all four hold:
    no `TraceID`/`TraceHeader` type wrapping a single string, no options
    struct, no builder, no generic helper, no new file in either package that
    exists to hold structure the old code did not need (`authz.go` and its
-   `requireWrite` predate the agent and are not new). Any of these: FAIL.
+   `requireWrite` predate the agent and are not new; so do `Handler`,
+   `NewHandler`, `List` and `Routes` in `trace.go` — judge only what was added
+   beside them). Any of these: FAIL.
 2. **Deletion is allowed, growth is not.** `Grants` has a caller and stays;
    if `ReplicaCount` and `Name` are gone because nothing referenced them, that
    is dead-code removal and passes this point. Whatever survives of `Grants`,
