@@ -175,7 +175,7 @@
   files: [internal/services/device_service.go]
   anchor: 'return "", -1, false, nil, fmt\.Errorf'
   expect:
-    review: { category: "🔴", cluster: "ProcessHeartbeat", fix: "Replace nil returns" }
+    review: { category: "🔴", cluster: "ProcessHeartbeat", fix: "Separate Failure from Absence" }
 
 - id: R8.Q3.context-background-in-service
   rule: R8
@@ -183,7 +183,7 @@
   files: [internal/services/device_service.go, internal/services/sync_service.go, internal/jobs/registry.go]
   anchor: 'context\.(Background|TODO)\(\)'
   expect:
-    review:   { category: "🔴", fix: "Thread `ctx`" }
+    review:   { category: "🔴", fix: "Pass Cancellation Down" }
     refactor: { gone: 's\.repo\.\w+\(context\.(Background|TODO)\(\)', count_max: 0, present: 'ProcessHeartbeat\(ctx context\.Context' }
 
 - id: R8.Q5.flap-window-from-service
@@ -211,7 +211,7 @@
   files: [internal/services/device_service.go]
   anchor: 'goto retry'
   expect:
-    review:   { category: "🔴", cluster: "ProcessHeartbeat", fix: "Replace Sleep with Timer Select" }
+    review:   { category: "🔴", cluster: "ProcessHeartbeat", fix: "Replace Sleep with Cancellable Wait" }
     refactor: { gone: 'goto retry', count_max: 0 }
 
 - id: R11.Q4.force-flag-in-body
@@ -690,7 +690,7 @@
   files: [internal/repository/device_repository.go]
   anchor: 'type DeviceRepository interface'
   expect:
-    review:   { category: "🔴", fix: "Inline the interface" }
+    review:   { category: "🔴", fix: "Delete the Test Seam" }
     refactor: { gone: 'type DeviceRepository interface', count_max: 0 }
 
 - id: R6.Q2.mock-repo-double
@@ -708,7 +708,7 @@
   files: [internal/mocks/notifier.go, internal/repository/device_repository.go]
   anchor: 'avoids an import cycle'
   expect:
-    review: { category: "🔴", fix: "Inline the interface", note: "no back-import exists; the claim is false" }
+    review: { category: "🔴", fix: "Delete the Test Seam", note: "no back-import exists; the claim is false" }
 
 - id: R6.Q4.sync-service-takes-interface
   rule: R6
@@ -716,7 +716,7 @@
   files: [internal/services/sync_service.go, internal/services/snapshot_service.go]
   anchor: 'repo repository\.DeviceRepository'
   expect:
-    review: { category: "🔴", fix: "Inline the interface" }
+    review: { category: "🔴", fix: "Delete the Test Seam" }
 
 - id: R6.Q5.for-testing
   rule: R6
@@ -740,7 +740,7 @@
   files: [internal/services/alert_service.go]
   anchor: 'func newFormatter\(kind string\) Formatter'
   expect:
-    review: { category: "🔴", fix: "Inline the interface" }
+    review: { category: "🔴", fix: "Delete the Test Seam" }
     lint:   { linter: ireturn, route: R6 }
 
 - id: CTRL.R6.store-interface
@@ -768,7 +768,7 @@
   files: [internal/services/service_test.go, internal/placement/picker_test.go]
   anchor: 'if t[ct]\.wantErr'
   expect:
-    review:   { category: "🔴", fix: "Split `wantErr` tables" }
+    review:   { category: "🔴", fix: "Split Success and Error Tables" }
     refactor: { gone: 'wantErr', count_max: 0 }
     lint:     { linter: nestif, route: R7, also: [gocognit] }
 
@@ -824,7 +824,7 @@
   files: [internal/jobs/registry.go]
   anchor: '^var (handlers = map|storeOnce sync\.Once|store \*repository\.MemStore)'
   expect:
-    review:   { category: "🔴", fix: "Replace `init()` with a constructor" }
+    review:   { category: "🔴", fix: "Replace Import-Time Initialization with a Constructor" }
     refactor: { gone: '^var (handlers|storeOnce|store) ', count_max: 0 }
     lint:     { linter: gochecknoglobals, route: R8 }
 
@@ -834,7 +834,7 @@
   files: [internal/jobs/registry.go, internal/env/env.go]
   anchor: '^func init\(\)'
   expect:
-    review:   { category: "🔴", fix: "Replace `init()` with a constructor" }
+    review:   { category: "🔴", fix: "Replace Import-Time Initialization with a Constructor" }
     refactor: { gone: '^func init\(\)', count_max: 0 }
     lint:     { linter: gochecknoinits, route: R8 }
 
@@ -989,7 +989,7 @@
   files: [internal/services/device_service.go]
   anchor: 'go s\.flushLoop\(\)'
   expect:
-    review:   { category: "🐛", fix: "Make the Goroutine Joinable" }
+    review:   { category: "🐛", fix: "Make Concurrent Work Joinable" }
     refactor: { gone: 'go s\.flushLoop\(\)', count_max: 0 }
 
 - id: R10.Q4.split-guard
@@ -1006,7 +1006,7 @@
   files: [internal/services/device_service.go, internal/services/retry.go, internal/services/sync_service.go]
   anchor: 'time\.Sleep\('
   expect:
-    review:   { category: "🔴", fix: "Replace Sleep with Timer Select" }
+    review:   { category: "🔴", fix: "Replace Sleep with Cancellable Wait" }
     refactor: { gone: 'time\.Sleep\(', count_max: 0, scope: 'internal/services/' }
 
 - id: R10.lint.copylocks
@@ -1351,7 +1351,7 @@
   files: [internal/report/catalog.go]
   anchor: 'return nil$'
   expect:
-    review:   { category: "🔴", cluster: "Catalog.Find", fix: "Replace nil returns" }
+    review:   { category: "🔴", cluster: "Catalog.Find", fix: "Separate Failure from Absence" }
     refactor: { gone: 'return nil$', count_max: 0, scope: 'internal/report/catalog.go', present: 'func \(c \*?Catalog\) Find\(name string\) \((\w+, bool|\w+, error)\)' }
 
 - id: CASE-E.nil-parameters
@@ -1408,5 +1408,5 @@
   files: [internal/env/env.go]
   anchor: '^var region string|os\.Getenv\("REGION"\)'
   expect:
-    review:   { category: "🔴", fix: "Replace `init()` with a constructor" }
+    review:   { category: "🔴", fix: "Replace Import-Time Initialization with a Constructor" }
     lint:     { linter: gochecknoglobals, route: R8, also: [gochecknoinits] }
