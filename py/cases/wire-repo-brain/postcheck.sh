@@ -10,7 +10,11 @@
 #      never a diverged fork) — the cheap stand-in for a second idempotence run
 set -uo pipefail
 here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-. "$here/../../postcheck/lib.sh"
+# postcheck/lib.sh is two levels up in this repository (py/cases/<case>/) and one
+# level up when the suite is copied under <plugin>/evals/ for a run.
+for lib in "$here/../../postcheck/lib.sh" "$here/../postcheck/lib.sh"; do
+  [ -f "$lib" ] && { . "$lib"; break; }
+done
 plugin_root="$(cd "$here/../.." && pwd)"
 
 gate="$EVAL_DIR/scripts/check-repo-brain.sh"
