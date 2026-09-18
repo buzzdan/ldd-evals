@@ -13,6 +13,11 @@
 #   lang          suite name, default go
 #   PLUGIN_SHA / PLUGIN_VERSION (env) override what is read from the checkout,
 #                 for a run recorded against a plugin state the checkout has moved past
+#   BASELINE_NAME (env) overrides the whole directory name. The default
+#                 <lang>-<version>-<sha> assumes the plugin and the fixture share a
+#                 language; a run of the generic plugin over go-mini is named
+#                 generic-gomini-<version>-<sha> instead, and plugin.json records
+#                 which plugin was measured either way
 #
 # Unpack the traces before regrading: zstd -dc traces.tar.zst | tar -xf - -C <baseline>
 set -euo pipefail
@@ -29,7 +34,8 @@ done
 
 sha=${PLUGIN_SHA:-$(git -C "$plugin" rev-parse --short=7 HEAD)}
 version=${PLUGIN_VERSION:-$(jq -r .version "$plugin/.claude-plugin/plugin.json")}
-name="$lang-$version-$sha"
+plugin_name=$(jq -r .name "$plugin/.claude-plugin/plugin.json")
+name=${BASELINE_NAME:-"$lang-$version-$sha"}
 dest="$root/baselines/$name"
 [[ -e $dest ]] && { echo "promote-baseline: $dest already exists" >&2; exit 1; }
 
@@ -39,15 +45,15 @@ traces=$(cd "$run" && find . -type f -name trace.jsonl | sort)
 if [[ -n $traces ]]; then
   (cd "$run" && printf '%s\n' "$traces" | tar -cf - -T -) | zstd -q -19 -T0 -o "$dest/traces.tar.zst"
 fi
-jq -n --arg lang "$lang" --arg version "$version" --arg sha "$sha" \
-  '{lang: $lang, plugin_repo: "buzzdan/ai-coding-rules", plugin_version: $version, plugin_sha: $sha}' \
+jq -n --arg lang "$lang" --arg plugin "$plugin_name" --arg version "$version" --arg sha "$sha" \
+  '{lang: $lang, plugin: $plugin, plugin_repo: "buzzdan/ai-coding-rules", plugin_version: $version, plugin_sha: $sha}' \
   > "$dest/plugin.json"
 
 if [[ ! -f $dest/README.md ]]; then
   {
     echo "# Baseline $name"
     echo
-    echo "Plugin \`buzzdan/ai-coding-rules\` at $sha (v$version). Unpack the traces before"
+    echo "Plugin \`$plugin_name\` from \`buzzdan/ai-coding-rules\` at $sha (v$version). Unpack the traces before"
     echo "regrading: \`zstd -dc traces.tar.zst | tar -xf - -C .\` from this directory."
     for agg in "$dest"/*/aggregate-result.json; do
       [[ -f $agg ]] || continue

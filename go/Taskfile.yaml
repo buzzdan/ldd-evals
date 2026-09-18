@@ -60,6 +60,6 @@ tasks:
         bin/ldd-eval regrade --tag {{.TIER}} --out {{.OUT}}/{{.TIER}} {{.CASE_FLAG}} {{.EVALS_DIR}}
 
   baseline:
-    desc: Promote the run under OUT to baselines/go-<plugin version>-<plugin sha>
+    desc: Promote the run under OUT to baselines/go-<plugin version>-<plugin sha> (NAME=<dir> overrides, e.g. generic-gomini-0.1.0-<sha>)
     cmds:
-      - bash scripts/promote-baseline.sh {{.OUT}} {{.PLUGIN}}
+      - '{{if .NAME}}BASELINE_NAME={{.NAME | shellQuote}} {{end}}bash scripts/promote-baseline.sh {{.OUT}} {{.PLUGIN}}'
