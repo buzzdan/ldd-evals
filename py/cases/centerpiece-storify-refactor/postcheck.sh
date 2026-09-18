@@ -4,7 +4,12 @@
 # the fixture's unrelated plants do not fail the case), rung-0 parse test,
 # tests/lint green, and the hidden black-box suite as the behavior oracle.
 set -uo pipefail
-. "$(dirname "$(readlink -f "$0")")/../../postcheck/lib.sh"
+here="$(dirname "$(readlink -f "$0")")"
+# postcheck/lib.sh is two levels up in this repository (py/cases/<case>/) and one
+# level up when the suite is copied under <plugin>/evals/ for a run.
+for lib in "$here/../../postcheck/lib.sh" "$here/../postcheck/lib.sh"; do
+  [ -f "$lib" ] && { . "$lib"; break; }
+done
 
 assert "task test green" run_task test
 assert "task lint green" run_task lint
