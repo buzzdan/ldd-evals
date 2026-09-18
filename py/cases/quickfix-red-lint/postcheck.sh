@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# quickfix-red-lint postcheck — runs in the kept scaffold after /py-ldd-quickfix.
+# quickfix-red-lint postcheck — runs in the kept scaffold after /{{cmd_prefix}}-quickfix.
 #   1. pyproject.toml (the ruff and mypy configuration) is byte-identical to the
 #      fixture's original (lint-fixer hard limit)
 #   2. task test is green

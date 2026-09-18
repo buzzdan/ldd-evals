@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'Using py-ldd workflow'
+pattern: 'Using {{cmd_prefix}} workflow'
 match: contains
 target: trace
 ---

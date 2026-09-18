@@ -26,13 +26,14 @@ keeps a plugin clone at about 2 MB.
   plugin directory. The `go:cases` and `py:cases` tasks copy their suite into
   `<plugin>/evals/`, a path the plugin repository ignores, so nothing is
   committed or shipped there. The copy is also where the plugin's command
-  prefix is written: the Go suite's prompts, graders, postchecks and scaffolds
+  prefix is written: each suite's prompts, graders, postchecks and scaffolds
   name slash commands and the announcement line through the token
-  `{{cmd_prefix}}`, and the `go:cases` task replaces it with `CMD_PREFIX` —
+  `{{cmd_prefix}}`, and its `cases` task replaces it with `CMD_PREFIX` —
   read from the plugin's own `commands/` directory unless given on the command
-  line — so the same cases measure `go-linter-driven-development` (`go-ldd`)
-  and the generic `linter-driven-development` (`ldd`). The copied suite stays
-  concrete, which is what the gate and the runner read.
+  line — so the same Go cases measure `go-linter-driven-development` (`go-ldd`)
+  and the generic `linter-driven-development` (`ldd`), and the same Python
+  cases measure the Python plugin (`py-ldd`) and the generic one. The copied
+  suite stays concrete, which is what the gate and the runner read.
 - **The hand-off.** The plugin repository's `scripts/evals.sh` clones this
   repository into an ignored `.evals/` directory and calls `task go:run` with
   `PLUGIN` set to its own plugin directory.
