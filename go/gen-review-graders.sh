@@ -163,8 +163,10 @@ for anchor in "${!clusters[@]}"; do
   fi
   # Default: the anchor on a line that carries the word "cluster" (CLUSTER: \`Device.Status\`),
   # or at the start of a bullet within eight lines below a "cluster(s)" header
-  # (**Clusters** followed by "- **Device.Status** — R1, R11").
-  default_pattern="(?i:\\bcluster\\b)[^\\n]*\\b$names\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\x60?$names\\b"
+  # (**Clusters** followed by "- **Device.Status** — R1, R11"). The anchor is
+  # matched without regard to case: reports title a lower-case manifest anchor
+  # such as "retention" as "CLUSTER: Retention".
+  default_pattern="(?i:\\bcluster\\b)[^\\n]*\\b(?i:$names)\\b|(?i:\\bclusters?\\b)[^\\n]*(?:\\n[^\\n]*){0,8}?\\n[ \\t]*(?:[-*•]|[0-9]+[.)])[ \\t]*\\**\x60?(?i:$names)\\b"
   pattern="${cluster_match[$anchor]:-$default_pattern}"
   cat > "$out/cluster-$s.md" <<EOF
 ---
