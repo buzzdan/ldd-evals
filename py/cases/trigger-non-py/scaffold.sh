@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Scaffold a tiny Go-only repository into <dest>: no pyproject.toml, no .py
 # files. The trigger-non-py case checks that "implement X" here does NOT start
-# the py-ldd workflow.
+# the {{cmd_prefix}} workflow.
 #
 # Usage: trigger-non-py/scaffold.sh <dest-dir>
 set -euo pipefail
