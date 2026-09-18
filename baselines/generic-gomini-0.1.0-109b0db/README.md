@@ -36,7 +36,7 @@ Cheap tier (`cheap/`), runs passing every grader:
 
 | Case | Passed | Turns | Cost | Reads as |
 |---|---|---|---|---|
-| trigger-non-go | 3/3 | 1,1,1 | $0.12 | the generic skill did not start on a Python repo (finding 1: this is a failure of the plugin that the Go suite's grader reads as a pass) |
+| trigger-non-go | 3/3 | 1,1,1 | $0.12 | no skill started under the two-sentence prompt, on any plugin (finding 1) |
 | trigger-go | 3/3 | 4,4,6 | $0.31 | skill invoked and announced in every run |
 | case-a-retention-review | 1/2 | 25,31 | $3.09 | 11/13 then 13/13: run 1 rendered no `Retention` cluster; the same flip as the reference, other run |
 | case-b-endpoint-review | 0/2 | 33,33 | $3.54 | 12/15 both runs; `fix-name-enum` misses both, as in the reference |
@@ -59,7 +59,7 @@ passing all graders, then the grader-level view.
 | Case | go-2.11.0 | generic 0.1.0 | Grader level | Reads as |
 |---|---|---|---|---|
 | trigger-go | 3/3 | 3/3 | identical | the generic skill triggers on Go |
-| trigger-non-go | 3/3 | 3/3 | identical | means the opposite thing here (finding 1) |
+| trigger-non-go | 3/3 | 3/3 | identical | not a trigger measurement for this plugin (finding 1) |
 | case-a-retention-review | 1/2 | 1/2 | 13/13 · 11/13 → 11/13 · 13/13 | the same two cluster graders flip, in the other run |
 | case-b-endpoint-review | 0/2 | 0/2 | 13/15 · 13/15 → 12/15 · 12/15 | one grader down per run: `fix-parameter-object` and `precision-test-clean` (run 1), `skeptic-confirmed` (run 2); `fix-name-enum` still misses both, `skeptic-travels-together` now passes |
 | case-c-picker-review | 2/2 | 2/2 | identical | |
@@ -87,19 +87,22 @@ carries, not in extra turns.
 
 ## Findings about the generic plugin
 
-1. **The generic skill does not auto-trigger on a Python-only repository.** `trigger-non-go`
+1. **The trigger-non-go pass says nothing about the generic plugin's trigger.** The case
    plants a Python repo and asks to "implement a request-id middleware"; the Go suite's
    graders assert the Go workflow is *not* invoked there, and the generic plugin passed
-   them: one turn, no `Skill` call, no "Using ldd workflow" line. The agent wrote two
-   sentences on its approach, said the work would go "likely via the linter-driven-development
-   workflow given this repo's setup", and printed DONE. That is the plugin's own trigger
-   failing: the generic binding's `README.md` and its skill description say it applies to
-   any language, and a Python repository is exactly where it is meant to start. The Go
-   trigger worked in all three runs, so the skill's trigger text still reads as Go-shaped
-   to the model, or the detection pre-flight is not reached before the model decides
-   whether to invoke the skill. This is the first thing the Python fixture's `trigger-*`
-   cases must measure, and the case that in this suite reads as a control must be read as
-   a defect when the plugin under test is the generic one.
+   them: one turn, no `Skill` call, no "Using ldd workflow" line. Read at first as the
+   generic skill failing to start on Python, this was the prompt, not the plugin: the
+   negative control's system prompt says "do not write any code, state in two sentences
+   how you would approach the task", while `trigger-go` says "announce the workflow,
+   invoke the skill that runs it". The Python suite's `trigger-py`, which carries the
+   invoking prompt, passed 3 of 3 under the generic plugin the same day (announcement,
+   skill invoked, pre-flight listed `task test` and `task lint` with ruff and mypy, then
+   DONE; $0.57 for six runs, `results/generic-py-smoke`), and its negative control on a
+   Go-only repo passed 3 of 3 with the two-sentence prompt. The generic plugin triggers
+   on Go and on Python when asked as the trigger cases ask; under the two-sentence prompt
+   no plugin starts on any language. A suite that measures the generic plugin needs a
+   `trigger-*` case per language with the invoking prompt; the negative controls of the
+   language suites are not evidence either way for it.
 2. **`cluster-job-kind` fails in two of three whole-repository runs**, where the Go plugin
    rendered it in all three reference runs. The R11 findings on `Job.Kind` are all present
    as singletons; the cluster entry is what is missing. Same shape as the reference's
