@@ -30,3 +30,23 @@ class Catalog:
             if d.name == name:
                 return d
         return None
+
+    @classmethod
+    def parse(cls, text: str) -> "Catalog":
+        """Build a Catalog from catalog text, one ``name/model`` device per line."""
+        devices = [d for d in map(parse_device, text.splitlines()) if d is not None]
+        return cls(devices)
+
+
+def parse_device(line: str) -> Device | None:
+    """Parse one catalog line, written as ``name/model``.
+
+    A blank line is not a device; it parses to None so callers can skip it.
+    """
+    text = line.strip()
+    if not text:
+        return None
+    name, sep, model = text.partition("/")
+    if not sep or not name or not model:
+        return None
+    return Device(name=name, model=model)

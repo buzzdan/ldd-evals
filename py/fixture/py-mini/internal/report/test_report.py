@@ -56,12 +56,18 @@ def test_catalog_find_unknown_device() -> None:
     assert cat.find("dev-9") is None
 
 
+def test_catalog_parse_skips_blank_lines() -> None:
+    cat = Catalog.parse("dev-1/m1\n\ndev-2/m2\n")
+
+    assert cat.find("dev-2") == Device(name="dev-2", model="m2")
+
+
 def test_announce_writes_known_device() -> None:
     buf = io.StringIO()
-    cat = Catalog([Device(name="dev-1", model="m1")])
+    text = "dev-1/m1\n"
 
-    announce(buf, cat, "dev-1")
-    announce(buf, cat, "dev-9")
+    announce(buf, text, "dev-1")
+    announce(buf, text, "dev-9")
 
     assert buf.getvalue().endswith(" catalog dev-1/m1\n")
     assert buf.getvalue().count("\n") == 1
