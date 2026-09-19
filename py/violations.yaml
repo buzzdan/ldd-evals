@@ -1432,8 +1432,13 @@
     review:   { category: "🔴", cluster: "Reporter", fix: "Add validating constructor" }
     refactor: { gone: '^\s+(sink: Sink \| None|clock: Clock \| None)', count_max: 0 }
 
-# `Find` returning nil becomes `find` returning None; the fix is a result type
-# or an exception, never `Optional` at the call site.
+# `Find` returning nil has no Python twin: `find` returning `Device | None` is
+# the declared absence, checked by mypy at every call site, and not a disease.
+# The plant is the parser beside it. `parse_device` returns None for a blank
+# line (an absence the caller skips) and again for a malformed line (a failure
+# disguised as absence, so a broken catalog file silently shrinks). The anchor
+# is the failure return; the fix raises there and keeps the blank-line None,
+# so one `return None` survives the refactor. Never `tuple[Device, bool]`.
 - id: CASE-E.nil-return
   rule: R2
   case: E
@@ -1441,8 +1446,8 @@
   files: [internal/report/catalog.py]
   anchor: 'return None$'
   expect:
-    review:   { category: "🔴", cluster: "Catalog.find", fix: "Replace nil returns" }
-    refactor: { gone: 'return None$', count_max: 0, scope: 'internal/report/catalog.py', present: 'def find\(self, name: str\) -> (Device|tuple\[Device, bool\]|\w*Result\w*):' }
+    review:   { category: "🔴", fix: "Separate Failure from Absence" }
+    refactor: { gone: 'return None$', count_max: 1, scope: 'internal/report/catalog.py', present: 'raise \w*Error' }
 
 - id: CASE-E.nil-parameters
   rule: R2
