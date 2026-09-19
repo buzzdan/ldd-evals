@@ -14,7 +14,11 @@ assert "task lint green" run_task lint
 
 assert_eq "R2 Q2: no attribute None re-check inside internal/report methods" \
   "$(count_matches_prod 'if self\.\w+ is None' 'internal/report/*.py')" 0
-assert_eq "R2 Q5: no 'return None' in catalog.py" "$(count_matches 'return None$' 'internal/report/catalog.py')" 0
+# The blank-line None in parse_device is a declared absence and stays; the
+# malformed-line None was a failure and becomes a raise.
+assert_le "R2 Q5: at most the blank-line 'return None' left in catalog.py" "$(count_matches 'return None$' 'internal/report/catalog.py')" 1
+assert_ge "R2 Q5: a malformed catalog line raises in catalog.py" "$(count_matches 'raise \w*Error' 'internal/report/catalog.py')" 1
+assert_eq "R2 Q5: no tuple[Device, bool] shape introduced" "$(count_matches 'tuple\[Device, bool\]' 'internal/report/*.py')" 0
 assert_le "R2 Q1: Reporter constructed in production only at its one wiring site" \
   "$(count_matches_prod '\bReporter\(' 'internal/report/*.py')" 1
 # The null object is CALLED somewhere in the package, not just declared. The
