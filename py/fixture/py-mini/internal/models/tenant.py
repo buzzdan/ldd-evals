@@ -11,16 +11,15 @@ _TENANT_CHARS = frozenset("abcdefghijklmnopqrstuvwxyz0123456789-")
 class Tenant:
     """Identifies the owner of a device fleet.
 
-    A Tenant can only be obtained through Tenant.parse, so every value in
-    circulation is already non-empty, lowercase, and at most 32 characters
-    long; nothing downstream needs to check it again.
+    Every Tenant is validated as it is built, so a value in circulation is
+    already non-empty, lowercase, and at most 32 characters long; nothing
+    downstream needs to check it again. Tenant.parse is the boundary spelling.
     """
 
     _id: str
 
-    @classmethod
-    def parse(cls, raw: str) -> Self:
-        """Validate a raw tenant identifier once, at the boundary."""
+    def __post_init__(self) -> None:
+        raw = self._id
         if not raw:
             raise ValueError("tenant: empty")
         if len(raw) > _MAX_TENANT_LEN:
@@ -28,6 +27,10 @@ class Tenant:
         for r in raw:
             if not _is_tenant_char(r):
                 raise ValueError(f"tenant \"{raw}\": want lowercase letters, digits, or '-'")
+
+    @classmethod
+    def parse(cls, raw: str) -> Self:
+        """Validate a raw tenant identifier once, at the boundary."""
         return cls(raw)
 
     @property
