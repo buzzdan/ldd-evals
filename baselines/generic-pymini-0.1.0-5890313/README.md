@@ -161,6 +161,20 @@ binding is meant to produce.
   suites). Regrade effect: review-full run 1 106 → 107; no go-mini verdict moves.
 - #30: case D's `cheaper-alternative-int` accepts "dead" among the qualifiers (both suites).
   Regrade effect: case D 1/2 → 2/2.
+- The grader pass after `python-0.2.0-6ef1dcd`: `precision: finding` on the tenant-type
+  and region-zone-switch controls (a mention is a reference, a `file:line` cite in a
+  row naming the control's rule is the finding), the same line for case F's
+  `_drain()` grader, `evidence-dial` without the call parentheses, recall anchors for
+  `CASE-E.nil-return` and `R10.Q5.production-sleep` that need the plant named rather
+  than its file, and the review-full timeout at 3600 s. Regrade effect on this
+  baseline, measured against a regrade with the graders just before it so the earlier
+  fixes do not blur it: case F 1/2 → 2/2 (`precision-drain-clean`, run 2); review-full
+  +`precision-CTRL.R1.tenant-type` in run 1, +`precision-CTRL.R11.region-zone-switch`
+  in run 2, and −`recall-CASE-E.nil-return` in all three runs, which is not three
+  misses: this fixture predates the `parse_device` plant (#32), so the anchor the
+  grader now needs was not there to name, and the old pattern passed on docstring
+  citations of `catalog.py`. Level under all fixes: 107 · 104 · 102 of 110. Pass rate
+  0.55 → 0.59 (17 of 29).
 
 ## Infrastructure notes
 

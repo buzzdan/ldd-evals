@@ -141,6 +141,18 @@ case-b 3 (`fix-parameter-object`, `precision-test-clean`, then `evidence-dial`,
 same reading rule holds for a change to the generic plugin: one grader on a scoped review
 is noise, two is a signal; review-full inside 104–108 is noise.
 
+## Grader changes made after the run
+
+- The grader pass after `python-0.2.0-6ef1dcd`: case F's `precision-drain-clean` fails
+  on `drain()` in a finding row's location column, not on the word anywhere in the
+  report; the `precision: finding` mode on the region-zone-switch control (a
+  `file:line` cite in a row naming R11) in place of the bare `Zone()` symbol; the
+  review-full timeout at 3600 s. Regrade effect on this baseline, measured against a
+  regrade with the graders just before it: case F 1/2 → 2/2 (run 2 cited `drain()`
+  inside the scheduler-goroutine finding, the same citation finding 4 of
+  `go-2.11.0-c78b55f` describes); no review-full verdict moves. Pass rate 0.72 → 0.76
+  (22 of 29).
+
 ## Infrastructure notes
 
 - The run executed in one sitting from the web container with the `claude` CLI

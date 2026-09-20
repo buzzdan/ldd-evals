@@ -29,6 +29,18 @@
 #                      (ParseRegion as the reuse target, errors.Is as a fix, …)
 #                      opts out with mention_ok; a control lacking `symbol:`
 #                      fails the generator so the manifest stays complete.
+#                      A control with `precision: finding` keeps its grader but
+#                      draws the line elsewhere: the report may name the symbol
+#                      (as the existing type to wire in, say) and fails only when
+#                      one of the control's files is cited as a finding location,
+#                      `file.py:NN` with a line number, in a row whose next column
+#                      names the control's rule. Reports write a finding as
+#                      `location | rule question: evidence | fix | size`; a bare
+#                      path or a symbol in the prose is a reference, and a row
+#                      under another rule (the comment critic rewriting a
+#                      docstring in the same file) is that rule's business. A row
+#                      that leaves the rule id to its section header escapes this
+#                      grader, so the mode is lenient by design.
 #
 # Usage: gen-review-graders.sh [violations.yaml] [graders-dir]
 # Re-runnable: previously generated recall-/cluster-/precision- files are
@@ -45,16 +57,18 @@ find "$out" -maxdepth 1 -type f \( -name 'recall-*.md' -o -name 'cluster-*.md' -
 
 # One record per entry, fields joined by the ASCII unit separator (\x1f) — a
 # non-whitespace IFS keeps empty fields in place, where tabs would collapse:
-#   id  control  basenames(space-sep)  has_review  cluster  symbol  mention_ok  cluster_match  recall_match
+#   id  control  basenames(space-sep)  has_review  cluster  symbol  mention_ok  cluster_match  recall_match  precision_mode  rule
 records=$(awk '
   function flush() {
-    if (id != "") printf "%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\n", id, control, files, review, cluster, symbol, mok, cmatch, rmatch
-    id = ""; control = "false"; files = ""; review = "0"; cluster = ""; symbol = ""; mok = "false"; cmatch = ""; rmatch = ""
+    if (id != "") printf "%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\n", id, control, files, review, cluster, symbol, mok, cmatch, rmatch, pmode, rule
+    id = ""; control = "false"; files = ""; review = "0"; cluster = ""; symbol = ""; mok = "false"; cmatch = ""; rmatch = ""; pmode = "mention"; rule = ""
   }
   /^- id:[[:space:]]*/ { flush(); id = $0; sub(/^- id:[[:space:]]*/, "", id); sub(/[[:space:]].*$/, "", id); next }
   id == "" { next }
   /^[[:space:]]+control:[[:space:]]*true/ { control = "true"; next }
   /^[[:space:]]+mention_ok:[[:space:]]*true/ { mok = "true"; next }
+  /^[[:space:]]+precision:[[:space:]]*finding/ { pmode = "finding"; next }
+  /^[[:space:]]+rule:[[:space:]]*/ { rule = $0; sub(/^[[:space:]]+rule:[[:space:]]*/, "", rule); sub(/[[:space:]].*$/, "", rule); next }
   /^[[:space:]]+files:[[:space:]]*\[/ {
     f = $0; sub(/^[[:space:]]+files:[[:space:]]*\[/, "", f); sub(/\].*$/, "", f)
     n = split(f, parts, /,[[:space:]]*/); files = ""
@@ -87,7 +101,7 @@ declare -A recall_ids recall_first recall_match
 declare -A clusters cluster_match
 n_recall=0 n_cluster=0 n_precision=0 missing_symbol=0
 
-while IFS=$'\x1f' read -r id control files review cluster symbol mok cmatch rmatch; do
+while IFS=$'\x1f' read -r id control files review cluster symbol mok cmatch rmatch pmode rule; do
   [[ -n "$id" ]] || continue
   if [[ "$control" == "true" ]]; then
     [[ "$mok" == "true" ]] && continue
@@ -96,12 +110,27 @@ while IFS=$'\x1f' read -r id control files review cluster symbol mok cmatch rmat
       missing_symbol=1
       continue
     fi
+    if [[ "$pmode" == "finding" ]]; then
+      # A finding location is file.py:NN (or file.go:NN) in the first column of a
+      # row whose second column names the control's rule. The character class in
+      # front keeps test_tenant.py from matching tenant.py.
+      pat=""
+      for b in $files; do pat="${pat}${pat:+|}$(escape_re "$b")"; done
+      pattern="(?:^|[^A-Za-z0-9_])(?:$pat):[0-9][^\n|]*\|[^\n|]*\b$rule\b"
+      note="# control $id: healthy code that must draw no finding. A correct report may
+# name its symbol (as the existing type to wire in, say); it fails only when one of
+# its files is cited as a finding location, file:line, in a row that names $rule
+# (precision: finding)."
+    else
+      pattern="$symbol"
+      note="# control $id: healthy code that must draw no finding; its symbol must not
+# appear anywhere in the report (a mention IS the false positive)."
+    fi
     cat > "$out/precision-$id.md" <<EOF
 ---
-# control $id: healthy code that must draw no finding; its symbol must not
-# appear anywhere in the report (a mention IS the false positive).
+$note
 type: regex
-pattern: '$symbol'
+pattern: '$pattern'
 match: not_contains
 target: last_message
 ---
