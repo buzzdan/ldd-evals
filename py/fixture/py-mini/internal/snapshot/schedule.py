@@ -12,11 +12,20 @@ _MINUTES_PER_DAY = 24 * 60
 class Window:
     """A daily time-of-day interval during which snapshots may be taken.
 
-    A window that ends before it starts wraps past midnight.
+    A window that ends before it starts wraps past midnight. Both ends are
+    minutes since midnight and are checked as the Window is built, so a
+    Window in circulation is never empty and never points outside the day.
     """
 
     start: int  # minutes since midnight
     end: int  # minutes since midnight
+
+    def __post_init__(self) -> None:
+        for name, minutes in (("start", self.start), ("end", self.end)):
+            if not 0 <= minutes < _MINUTES_PER_DAY:
+                raise ValueError(f"window {name}: {minutes} minutes is outside the day")
+        if self.start == self.end:
+            raise ValueError(f"window {self} is empty")
 
     @classmethod
     def parse(cls, start: str, end: str) -> Self:
@@ -29,8 +38,6 @@ class Window:
             e = _parse_clock(end)
         except ValueError as err:
             raise ValueError(f"window end: {err}") from err
-        if s == e:
-            raise ValueError(f"window {start}-{end} is empty")
         return cls(start=s, end=e)
 
     def contains(self, t: datetime) -> bool:
