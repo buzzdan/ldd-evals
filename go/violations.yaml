@@ -26,6 +26,12 @@
 #   mention_ok: true    a correct report legitimately names this symbol (as the
 #                       reuse target or the fix), so no precision grader is
 #                       generated; default: not mentioned.
+#   precision: finding  keeps the grader but moves the line: the report may name
+#                       the symbol (an existing type to wire in, say) and fails
+#                       only when one of the control's files is cited as a
+#                       finding location, tenant.go:NN with a line number. For a
+#                       control that a correct report cites as the fix route
+#                       while a wrong one re-proposes it.
 # A plant with a review cluster may carry one more:
 #   cluster_match: '<ERE>'  replaces the generated cluster grader's default
 #                       pattern (the word "cluster", then the anchor or its
@@ -38,8 +44,8 @@
 #
 # Line-oriented on purpose: `files:` is a one-line flow list, `anchor:` is one
 # single-quoted line, and the parsers only read id / rule / control / files /
-# anchor (+ symbol / mention_ok on controls, cluster_match on clustered
-# plants). Keep it that way.
+# anchor (+ symbol / mention_ok / precision on controls, cluster_match on
+# clustered plants). Keep it that way.
 
 # ─── The centerpiece: (*DeviceService).ProcessHeartbeat ─────────────────────
 
@@ -1131,6 +1137,7 @@
   files: [internal/models/region.go]
   anchor: 'switch r \{'
   symbol: 'Zone\(\)'
+  precision: finding   # reports name .zone() when describing the Region type the bypassing code should use
   expect: { review: { findings: 0, note: "one site, named enum, no default" } }
 
 - id: CTRL.R11.errors-is

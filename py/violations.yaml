@@ -34,6 +34,12 @@
 #   mention_ok: true    a correct report legitimately names this symbol (as the
 #                       reuse target or the fix), so no precision grader is
 #                       generated; default: not mentioned.
+#   precision: finding  keeps the grader but moves the line: the report may name
+#                       the symbol (an existing type to wire in, say) and fails
+#                       only when one of the control's files is cited as a
+#                       finding location, tenant.py:NN with a line number. For a
+#                       control that a correct report cites as the fix route
+#                       while a wrong one re-proposes it.
 # A plant with a review cluster may carry one more:
 #   cluster_match: '<ERE>'  replaces the generated cluster grader's default
 #                       pattern (the word "cluster", then the anchor or its
@@ -46,8 +52,8 @@
 #
 # Line-oriented on purpose: `files:` is a one-line flow list, `anchor:` is one
 # single-quoted line, and the parsers only read id / rule / control / files /
-# anchor (+ symbol / mention_ok on controls, cluster_match on clustered
-# plants). Keep it that way.
+# anchor (+ symbol / mention_ok / precision on controls, cluster_match on
+# clustered plants). Keep it that way.
 #
 # Lint in Python is two tools. `task lint` is `ruff check` + `ruff format --check`
 # + `mypy --strict`; every plant is silenced with `# noqa: <codes>  # TODO` for
@@ -467,6 +473,7 @@
   files: [internal/models/tenant.py]
   anchor: 'def parse\(cls, raw: str\) -> Self:'
   symbol: 'Tenant\.parse'
+  precision: finding   # reports cite Tenant.parse as the existing type to wire in; re-proposing it is the false positive
   expect: { review: { findings: 0, note: "must not be re-proposed" } }
 
 - id: CTRL.R1.region-type
@@ -1080,6 +1087,10 @@
   questions: [Q5]
   files: [internal/services/device_service.py, internal/services/retry.py, internal/services/sync_service.py]
   anchor: 'time\.sleep\('
+  # every report cites these three files dozens of times; the plant is the sleep
+  # with a backoff argument, or the fix named for it, or "bare time.sleep" beside
+  # retry/backoff. Test sleeps (R7 Q6) and the flush loop's sleep (Q1/Q2) do not match.
+  recall_match: 'time\.sleep\(\(?(attempt|_retry_delay)|Replace Sleep with (Cancellable|Timer)|bare \x60?time\.sleep\x60?[^\n]{0,60}(retry|backoff)'
   expect:
     review:   { category: "🔴", fix: "Replace Sleep with Timer Select" }
     refactor: { gone: 'time\.sleep\(', count_max: 0, scope: 'internal/services/' }
@@ -1216,6 +1227,7 @@
   files: [internal/models/region.py]
   anchor: 'match self:'
   symbol: 'zone\(\)'
+  precision: finding   # reports name .zone() when describing the Region type the bypassing code should use
   expect: { review: { findings: 0, note: "one site, named enum, no default" } }
 
 - id: CTRL.R11.errors-is
@@ -1445,6 +1457,9 @@
   questions: [Q5]
   files: [internal/report/catalog.py]
   anchor: 'return None$'
+  # catalog.py is cited for its docstrings in every report; the plant is named
+  # by the function or by a line inside it (parse_device spans catalog.py:41-52).
+  recall_match: 'parse_device|catalog\.py:(4[1-9]|5[0-2])\b'
   expect:
     review:   { category: "🔴", fix: "Separate Failure from Absence" }
     refactor: { gone: 'return None$', count_max: 1, scope: 'internal/report/catalog.py', present: 'raise \w*Error' }

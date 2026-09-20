@@ -1,8 +1,10 @@
 ---
-# control CTRL.R11.region-zone-switch: healthy code that must draw no finding; its symbol must not
-# appear anywhere in the report (a mention IS the false positive).
+# control CTRL.R11.region-zone-switch: healthy code that must draw no finding. A correct report may
+# name its symbol (as the existing type to wire in, say); it fails only when one of
+# its files is cited as a finding location, file:line, in a row that names R11
+# (precision: finding).
 type: regex
-pattern: 'zone\(\)'
+pattern: '(?:^|[^A-Za-z0-9_])(?:region\.py):[0-9][^\n|]*\|[^\n|]*\bR11\b'
 match: not_contains
 target: last_message
 ---
