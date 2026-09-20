@@ -206,9 +206,34 @@ a scoped review is noise, two is a signal; review-full inside 104 to 106 of 110 
 a change on `evidence-dial`, on the two graders review-full misses every run, or on the
 `judge-categories` judge is the signal to look for.
 
+## Grader changes made after the run
+
+Verdicts above are as recorded. The grader pass that followed this run (branch
+`claude/grader-fixes`) changed six things this baseline had flagged: `evidence-dial`
+matches `_dial` with or without parentheses; `recall-CASE-E.nil-return` needs
+`parse_device` or a line inside it; `recall-R10.Q5.production-sleep` needs the sleep
+with its backoff argument, the fix name, or "bare time.sleep" beside retry/backoff;
+the tenant-type and region-zone-switch controls take `precision: finding` (a mention is
+a reference, a `file:line` cite in a row naming the control's rule is the finding);
+case F's `_drain()` grader draws the same line; review-full's timeout is 3600 s.
+Regrade effect on this baseline, measured against a regrade with the graders just
+before it: case B 0/2 → 1/2 (run 2); review-full 106 · 106 · 104 → 105 · 107 · 105 of
+110: +`precision-CTRL.R1.tenant-type` in every run, and in run 1
+−`recall-CASE-E.nil-return` and −`recall-R10.Q5.production-sleep`, the two vacuous
+passes the notes below describe. Pass rate 0.72 → 0.76 (22 of 29). The two regrades
+also showed `judge-categories` flipping on run 2's trace, FAIL once and PASS once
+against the recorded PASS, so finding "Generic and not Python" above reads as one to
+two runs of three, not a firm two.
+
+A separate fixture PR (branch `claude/harden-parse-controls`) closes the gap run 2
+found in the control itself: `Tenant`, `Window` and `DeviceID` validate on
+construction, so `Tenant(_id="INVALID!!!")` raises and the docstrings are true.
+`Region` is a `StrEnum` and already did.
+
 ## Grader notes for a follow-up
 
-Recorded, not acted on:
+Recorded at the time of the run; the first three and the timeout landed in the grader
+pass above:
 
 - `evidence-dial` (case B) matches only `_dial(`; both reports named `_dial` in backticks
   without the call parentheses. The finding it guards was present in both runs.
