@@ -869,12 +869,55 @@
     review:   { category: "🔴", fix: "Replace sleep with synchronization" }
     refactor: { gone: 'time\.sleep\(', count_max: 0, scope: 'test_\w+\.py' }
 
+# Q7 plants are the survivors of the mutation tool over the fixture's leaf
+# packages as the tree stands: no code was planted, the comparison's boundary row
+# was never written. recall_match spans the source and its test file, since a
+# report may anchor either.
+- id: R7.Q7.deviceid-maxlen-boundary
+  rule: R7
+  questions: [Q7]
+  files: [internal/pkg/deviceid/deviceid.py]
+  anchor: 'len\(raw\) > _MAX_LEN'
+  recall_match: '(test_)?deviceid\.py'
+  expect:
+    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    postcheck: { lived_max: 0, package: internal/pkg/deviceid }
+
+- id: R7.Q7.tenant-rune-boundary
+  rule: R7
+  questions: [Q7]
+  files: [internal/models/tenant.py]
+  anchor: 'return r in _TENANT_CHARS'
+  recall_match: '(test_)?tenant\.py'
+  expect:
+    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    postcheck: { lived_max: 0, package: internal/models }
+
+- id: R7.Q7.slugify-leading-separator
+  rule: R7
+  questions: [Q7]
+  files: [internal/utils.py]
+  anchor: 'if not dash and out:'
+  recall_match: '(test_)?utils\.py'
+  expect:
+    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    postcheck: { lived_max: 2, package: internal/utils.py }
+
+- id: CTRL.R7.no-survivors-placement
+  rule: R7
+  control: true
+  files: [internal/placement/picker.py]
+  anchor: 'def pick\('
+  symbol: 'Placer\.pick|_pick_replicas'
+  precision: finding
+  expect: { review: { findings: 0 } }
+
 - id: CTRL.R7.split-tables
   rule: R7
   control: true
-  files: [internal/snapshot/test_schedule.py, internal/models/test_tenant.py, internal/models/test_region.py]
+  files: [internal/snapshot/test_schedule.py, internal/models/test_region.py]
   anchor: '^def test_parse_\w+_(success|error)\('
-  symbol: 'test_parse_\w+_(success|error)'
+  symbol: 'test_parse_(window|region)_(success|error)'
   expect: { review: { findings: 0 } }
 
 - id: CTRL.R7.real-collaborators
