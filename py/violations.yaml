@@ -57,7 +57,8 @@
 #
 # Lint in Python is two tools. `task lint` is `ruff check` + `ruff format --check`
 # + `mypy --strict`; every plant is silenced with `# noqa: <codes>  # TODO` for
-# ruff and `# type: ignore[<code>]` for mypy, and scaffold/red-lint.sh strips both.
+# ruff and `# type: ignore[<code>]` for mypy, and scaffold/red-lint.sh strips both
+# (and ty's `# ty: ignore[<rule>]`, so a ty plant would need no scaffold change).
 # ruff has no duplicate-code, file-length, interface-return or exhaustiveness
 # rule and no race detector exists: those plants say `linter: "-"` and are
 # review-only.

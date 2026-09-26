@@ -14,7 +14,7 @@ LOG, a MULTIPLY hit naming R11), the agents (lint-fixer, rule hunters) and the R
 (a channel parser or `Channel` enum, sms in its own module). `postcheck.sh` re-runs
 build/test/lint and the hidden black-box suite, smokes `GET /channels` on the running service,
 reads the git history (≥3 commits, prep before the first sms commit) and enforces when-in-Rome
-(pyproject.toml unchanged, no third-party imports, no new `# noqa` or `# type: ignore`, no global
+(pyproject.toml unchanged, no third-party imports, no new `# noqa`, `# type: ignore` or `# ty: ignore`, no global
 mutation in new tests, no net new module in RED-zone `internal/models`, assertions not weakened).
 One llm judge scores the ship summary.
 

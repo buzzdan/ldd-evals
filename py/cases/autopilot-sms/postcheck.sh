@@ -17,7 +17,7 @@
 #   7    prep before feature: the first commit whose Python code mentions sms is not the first commit
 #   8    at least one new test_*.py, and no `env.CONFIG.<field> =` in any NEW test module
 #   9    when-in-Rome: pyproject.toml unchanged, no third-party imports, no golden/snapshot mechanism
-#   10   no NEW `# noqa` or `# type: ignore` in the diff (lint-fixer hard limits)
+#   10   no NEW `# noqa`, `# type: ignore` or `# ty: ignore` in the diff (lint-fixer hard limits)
 #   11   one owner of the channel literals: "pagerduty" and match/== on a.channel appear
 #        at most once each in production code (R11 refactor oracle; manifest count_max 1)
 #   12   zero net new production modules in internal/models (RED-zone package); the package-size
@@ -188,9 +188,9 @@ if [[ -z "$golden" ]]; then ok "no golden/snapshot test mechanism introduced"
 else fail "new test mechanism the repo does not use: $golden"; fi
 
 # ---------------------------------------------------------------- 10 lint-fixer hard limits
-new_noqa=$(added_lines '*.py' | grep -E '# noqa|# type: ignore' | count_lines)
-if (( new_noqa == 0 )); then ok "no new # noqa or # type: ignore directive since base"
-else fail "$new_noqa new suppression line(s) added since base:"; added_lines '*.py' | grep -E '# noqa|# type: ignore' | head -n 5 | indent; fi
+new_noqa=$(added_lines '*.py' | grep -E '# noqa|# type: ignore|# ty: ignore' | count_lines)
+if (( new_noqa == 0 )); then ok "no new # noqa, # type: ignore or # ty: ignore directive since base"
+else fail "$new_noqa new suppression line(s) added since base:"; added_lines '*.py' | grep -E '# noqa|# type: ignore|# ty: ignore' | head -n 5 | indent; fi
 
 # ---------------------------------------------------------------- 11 one owner of the channel literals
 pd=$(prod_py | xargs -r grep -nE '"pagerduty"' 2>/dev/null || true); pd_n=$(printf '%s\n' "$pd" | count_lines)
