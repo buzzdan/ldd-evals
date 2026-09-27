@@ -872,7 +872,11 @@
 # Q7 plants are the survivors of the mutation tool over the fixture's leaf
 # packages as the tree stands: no code was planted, the comparison's boundary row
 # was never written. recall_match spans the source and its test file, since a
-# report may anchor either.
+# report may anchor either. Verified with mutmut 3.8 over the four leaf modules
+# (84 mutants: 58 killed, 26 lived); the survivors differ from the Go twins
+# because mutmut and gremlins mutate different things, so each entry below names
+# its own survivor. mutmut needs `source_paths` and a test selection on its
+# command line: py-mini's pyproject carries no `[tool.mutmut]` table.
 - id: R7.Q7.deviceid-maxlen-boundary
   rule: R7
   questions: [Q7]
@@ -881,27 +885,29 @@
   recall_match: '(test_)?deviceid\.py'
   expect:
     review:   { category: "🔴", fix: "Kill the surviving mutant" }
-    postcheck: { lived_max: 0, package: internal/pkg/deviceid }
+    # Hand check only: mutmut never mutates __new__ (it is on the tool's
+    # never-mutate list), so no tool run reaches this comparison. The table has
+    # a 65-char row and no 64-char row; the hand check names the missing one.
 
 - id: R7.Q7.tenant-rune-boundary
   rule: R7
   questions: [Q7]
   files: [internal/models/tenant.py]
-  anchor: 'return r in _TENANT_CHARS'
+  anchor: 'raise ValueError\("tenant: empty"\)'
   recall_match: '(test_)?tenant\.py'
   expect:
     review:   { category: "🔴", fix: "Kill the surviving mutant" }
-    postcheck: { lived_max: 0, package: internal/models }
+    postcheck: { lived_max: 0, package: internal/models, note: "the only survivor is the empty-tenant message: `match=\"tenant\"` accepts any message that contains the word, so a `match=\"tenant: empty\"` row kills it; the `in _TENANT_CHARS` test has no boundary for mutmut to move and its one mutant dies" }
 
 - id: R7.Q7.slugify-leading-separator
   rule: R7
   questions: [Q7]
   files: [internal/utils.py]
-  anchor: 'if not dash and out:'
+  anchor: 'return "".join\(out\).removesuffix\("-"\)'
   recall_match: '(test_)?utils\.py'
   expect:
     review:   { category: "🔴", fix: "Kill the surviving mutant" }
-    postcheck: { lived_max: 2, package: internal/utils.py }
+    postcheck: { lived_max: 7, package: internal/utils.py, note: "a trailing-separator row (slugify(\"eu \") == \"eu\") kills the two removesuffix mutants; truncate(\"hb\", 1) == \"h\" and truncate(\"hb\", 0) == \"\" kill two more; the seven that remain are equivalent (n < 0 and len(s) < n in truncate, the three dash-flag literals in slugify, b <= a and / for // in days_between) and may live only if recorded beside the tests" }
 
 - id: CTRL.R7.no-survivors-placement
   rule: R7
@@ -911,6 +917,10 @@
   symbol: 'Placer\.pick|_pick_replicas'
   precision: finding
   expect: { review: { findings: 0 } }
+  # The picker table holds a node at each boundary of `capacity <= 0`: 0 and 1.
+  # Without the capacity-1 row the hand check would name it and the control
+  # would punish a correct report. mutmut still leaves its nine logging-literal
+  # mutants and four None/"" swaps alive; none is a missing row.
 
 - id: CTRL.R7.split-tables
   rule: R7

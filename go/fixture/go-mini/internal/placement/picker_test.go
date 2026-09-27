@@ -28,6 +28,7 @@ func TestPlacer_Pick(t *testing.T) { //nolint:gocognit // TODO
 	}{
 		{name: "first healthy node in zone, first outside it", nodes: fleet(), zone: "eu", wantPrimary: "n2", wantSecondary: "n4"},
 		{name: "zone with a single node", nodes: fleet(), zone: "us", wantPrimary: "n4", wantSecondary: "n2"},
+		{name: "capacity of one is enough", nodes: []placement.Node{{ID: "a", Zone: "eu", Capacity: 1}, {ID: "b", Zone: "us", Capacity: 1}}, zone: "eu", wantPrimary: "a", wantSecondary: "b"},
 		{name: "no node in zone", nodes: fleet(), zone: "sa", wantErr: true},
 		{name: "no node outside zone", nodes: fleet()[:4], zone: "eu", wantErr: true},
 		{name: "no nodes at all", nodes: nil, zone: "eu", wantErr: true},

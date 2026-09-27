@@ -847,6 +847,10 @@
   symbol: 'Placer\.Pick|pickReplicas'
   precision: finding
   expect: { review: { findings: 0 } }
+  # The picker table holds a node at each boundary of `Capacity <= 0`: 0 and 1.
+  # Without the capacity-1 row the hand check would name it and the control
+  # would punish a correct report; gremlins does not move constants, so it
+  # never saw that hole.
 
 - id: CTRL.R7.split-tables
   rule: R7
