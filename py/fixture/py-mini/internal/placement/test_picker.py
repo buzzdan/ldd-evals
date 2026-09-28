@@ -19,6 +19,13 @@ def _fleet() -> list[Node]:
     [
         (_fleet(), "eu", "n2", "n4", False),
         (_fleet(), "us", "n4", "n2", False),
+        (
+            [Node(id="a", zone="eu", capacity=1), Node(id="b", zone="us", capacity=1)],
+            "eu",
+            "a",
+            "b",
+            False,
+        ),
         (_fleet(), "sa", "", "", True),
         (_fleet()[:4], "eu", "", "", True),
         ([], "eu", "", "", True),

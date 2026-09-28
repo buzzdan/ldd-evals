@@ -805,12 +805,59 @@
     review:   { category: "🔴", fix: "Replace sleep with synchronization" }
     refactor: { gone: 'time\.Sleep\(', count_max: 0, scope: '_test\.go' }
 
+# Q7 plants are the survivors of the mutation tool over the fixture's leaf
+# packages as the tree stands: no code was planted, the comparison's boundary row
+# was never written. recall_match spans the source and its test file, since a
+# report may anchor either.
+- id: R7.Q7.deviceid-maxlen-boundary
+  rule: R7
+  questions: [Q7]
+  files: [internal/pkg/deviceid/deviceid.go]
+  anchor: 'len\(raw\) > maxLen'
+  recall_match: 'deviceid(_test)?\.go'
+  expect:
+    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    postcheck: { lived_max: 0, package: internal/pkg/deviceid, note: "a 64-char input row kills the > to >= mutant" }
+
+- id: R7.Q7.tenant-rune-boundary
+  rule: R7
+  questions: [Q7]
+  files: [internal/models/tenant.go]
+  anchor: '\(r >= ''a'' && r <= ''z''\)'
+  recall_match: 'tenant(_test)?\.go'
+  expect:
+    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    postcheck: { lived_max: 0, package: internal/models, note: "rows holding z, 0 and 9 kill the three range mutants" }
+
+- id: R7.Q7.slugify-leading-separator
+  rule: R7
+  questions: [Q7]
+  files: [internal/utils/strings.go]
+  anchor: 'b\.Len\(\) > 0'
+  recall_match: '(strings|utils_test)\.go'
+  expect:
+    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    postcheck: { lived_max: 2, package: internal/utils, note: "Slugify(\"#12\") == \"12\" kills the b.Len mutant; the two Truncate mutants are equivalent and may live only if recorded beside the tests" }
+
+- id: CTRL.R7.no-survivors-placement
+  rule: R7
+  control: true
+  files: [internal/placement/picker.go]
+  anchor: 'func \(p \*Placer\) Pick\('
+  symbol: 'Placer\.Pick|pickReplicas'
+  precision: finding
+  expect: { review: { findings: 0 } }
+  # The picker table holds a node at each boundary of `Capacity <= 0`: 0 and 1.
+  # Without the capacity-1 row the hand check would name it and the control
+  # would punish a correct report; gremlins does not move constants, so it
+  # never saw that hole.
+
 - id: CTRL.R7.split-tables
   rule: R7
   control: true
-  files: [internal/snapshot/schedule_test.go, internal/models/tenant_test.go, internal/models/region_test.go]
+  files: [internal/snapshot/schedule_test.go, internal/models/region_test.go]
   anchor: '^func TestParse\w+_(Success|Error)\('
-  symbol: 'TestParse\w+_(Success|Error)'
+  symbol: 'TestParse(Window|Region)_(Success|Error)'
   expect: { review: { findings: 0 } }
 
 - id: CTRL.R7.real-collaborators
