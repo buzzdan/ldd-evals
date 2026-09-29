@@ -20,8 +20,8 @@ prefix=${2:?usage: set-cmd-prefix.sh <evals-dir> <prefix>}
 [[ $prefix =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "set-cmd-prefix: prefix must be lower-case letters, digits and dashes: $prefix" >&2; exit 2; }
 
 n=0
-while IFS= read -r -d '' f; do
-  sed -i "s/{{cmd_prefix}}/$prefix/g" "$f"
+while IFS= read -r f; do
+  perl -pi -e "s/\{\{cmd_prefix\}\}/$prefix/g" "$f"
   n=$((n + 1))
-done < <(grep -rlZ --include='*.md' --include='*.sh' --include='*.yaml' -F '{{cmd_prefix}}' "$dir" --exclude-dir=fixture 2>/dev/null || true)
+done < <(grep -rl --include='*.md' --include='*.sh' --include='*.yaml' -F '{{cmd_prefix}}' "$dir" --exclude-dir=fixture 2>/dev/null || true)
 echo "set-cmd-prefix: $prefix written into $n file(s) under $dir"
