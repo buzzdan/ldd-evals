@@ -1,6 +1,7 @@
 ---
 type: regex
 pattern: 'Kill the surviving mutant'
+flags: i
 match: contains
 target: last_message
 ---
