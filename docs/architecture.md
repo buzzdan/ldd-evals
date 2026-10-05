@@ -45,7 +45,7 @@ keeps a plugin clone at about 2 MB.
   baseline task, and `plugin.json` in the baseline records the plugin either way.
 - **Manifest ids.** `<lang>/violations.yaml` lists the planted violations and
   controls. The same id set appears in every language with language-specific
-  anchors: `py/violations.yaml` carries go-mini's 153 ids over py-mini, and a
+  anchors: `py/violations.yaml` carries go-mini's 156 ids over py-mini, and a
   comment on an entry says where the disease had to change with the language.
 - **Suite defaults.** A suite's `cases/suite.yaml` names the source and test
   globs the runner's directory focus filters with; the Go suite names none and

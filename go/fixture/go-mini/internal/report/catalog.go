@@ -23,6 +23,15 @@ func NewCatalog(devices []Device) *Catalog {
 	return &Catalog{devices: slices.Clone(devices)}
 }
 
+// Models groups the catalog's device names by model.
+func (c *Catalog) Models() map[string][]string {
+	byModel := map[string][]string{}
+	for _, d := range c.devices {
+		byModel[d.Model] = append(byModel[d.Model], d.Name)
+	}
+	return byModel
+}
+
 // Find finds the device by name.
 func (c *Catalog) Find(name string) *Device {
 	for i := range c.devices {

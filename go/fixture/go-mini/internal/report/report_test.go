@@ -78,6 +78,19 @@ func TestCatalog_FindUnknownDevice(t *testing.T) {
 	}
 }
 
+func TestSummarize_CountsDevicesPerModel(t *testing.T) {
+	var buf bytes.Buffer
+	cat := report.NewCatalog([]report.Device{
+		{Name: "dev-1", Model: "m2"}, {Name: "dev-2", Model: "m1"}, {Name: "dev-3", Model: "m2"},
+	})
+
+	report.Summarize(&buf, cat)
+
+	if got, want := buf.String(), "m1: 1\nm2: 2\n"; got != want {
+		t.Fatalf("summarized %q, want %q", got, want)
+	}
+}
+
 func TestAnnounce_WritesKnownDevice(t *testing.T) {
 	var buf bytes.Buffer
 	cat := report.NewCatalog([]report.Device{{Name: "dev-1", Model: "m1"}})

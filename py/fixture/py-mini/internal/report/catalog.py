@@ -24,6 +24,13 @@ class Catalog:
         """Create a Catalog holding its own copy of devices."""
         self._devices = list(devices)
 
+    def models(self) -> dict[str, list[str]]:
+        """Group the catalog's device names by model."""
+        by_model: dict[str, list[str]] = {}
+        for d in self._devices:
+            by_model.setdefault(d.model, []).append(d.name)
+        return by_model
+
     def find(self, name: str) -> Device | None:
         """Find the device by name."""
         for d in self._devices:

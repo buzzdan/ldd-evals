@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 from internal.report.catalog import Catalog, Device
 from internal.report.reporter import Event, Options, Reporter, Sink
-from internal.report.wire import announce
+from internal.report.wire import announce, summarize
 
 
 def _fixed_clock() -> datetime:
@@ -60,6 +60,14 @@ def test_catalog_parse_skips_blank_lines() -> None:
     cat = Catalog.parse("dev-1/m1\n\ndev-2/m2\n")
 
     assert cat.find("dev-2") == Device(name="dev-2", model="m2")
+
+
+def test_summarize_counts_devices_per_model() -> None:
+    buf = io.StringIO()
+
+    summarize(buf, "dev-1/m2\ndev-2/m1\ndev-3/m2\n")
+
+    assert buf.getvalue() == "m1: 1\nm2: 2\n"
 
 
 def test_announce_writes_known_device() -> None:
