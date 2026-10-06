@@ -683,8 +683,8 @@
   expect:
     review: { category: "🔴", cluster: "role packages", fix: "Split a generic package by owner", route: R5 }
   # Reports name this cluster after the directories as often as after the smell.
-  cluster_match: 'CLUSTER[^\n]*(role packages|common\b[^\n]*utils|utils\b[^\n]*common)'
     lint:   { linter: "-", route: R5, note: "no role-name rule in ESLint" }
+  cluster_match: 'CLUSTER[^\n]*(role packages|common\b[^\n]*utils|utils\b[^\n]*common)'
 
 - id: R4.Q4.single-noun-package
   rule: R4
