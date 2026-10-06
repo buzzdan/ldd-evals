@@ -13,7 +13,7 @@ on:
         required: true
         default: go
         type: choice
-        options: [go, py]
+        options: [go, py, ts-react]
       tier:
         description: case tier
         required: true
@@ -29,7 +29,7 @@ on:
         required: true
         default: go-linter-driven-development
         type: choice
-        options: [go-linter-driven-development, python-linter-driven-development, linter-driven-development]
+        options: [go-linter-driven-development, python-linter-driven-development, ts-react-linter-driven-development, linter-driven-development]
       case:
         description: optional glob over case names (e.g. trigger-go, 'case-e-*'); empty runs the whole tier
         required: false
@@ -73,11 +73,17 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task go:manifest
       - run: task py:manifest
-      - name: generated review graders match the manifest (both suites)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: the TypeScript fixture's lint config is unchanged and its assertion counts are current
+        run: task ts-react:manifest
+      - name: generated review graders match the manifest (all three suites)
         run: |
           task go:graders
           task py:graders
-          git diff --exit-code -- go/cases/review-full/graders py/cases/review-full/graders
+          task ts-react:graders
+          git diff --exit-code -- go/cases/review-full/graders py/cases/review-full/graders ts-react/cases/review-full/graders 'ts-react/cases/*-neutral/graders'
 
   # Costs money: manual only. Checks out the plugin at the requested ref, runs one
   # tier with the model pinned and the cap set, and uploads results/ so a killed run
@@ -114,6 +120,10 @@ jobs:
           python-version: "3.11"
       - uses: astral-sh/setup-uv@v5
         if: inputs.language == 'py'
+      - uses: actions/setup-node@v4
+        if: inputs.language == 'ts-react'
+        with:
+          node-version: "22"
       - name: install the Python suite's tools (ruff, mypy with pytest, pytest; complexipy and radon run through uvx)
         if: inputs.language == 'py'
         run: |
