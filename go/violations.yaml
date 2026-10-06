@@ -396,6 +396,22 @@
     review: { category: "🔴", fix: "Introduce Parameter Object" }
     lint:   { linter: revive, rule: argument-limit, route: "@code-designing" }
 
+- id: R1.Q7.catalog-models-nested
+  rule: R1
+  questions: [Q7]
+  files: [internal/report/catalog.go, internal/report/wire.go]
+  anchor: 'map\[string\]\[\]string|catalog\.Models\(\)'
+  expect:
+    review: { category: "🔴", fix: "Name the Container" }
+
+- id: R1.Q8.retention-raw-map
+  rule: R1
+  questions: [Q8]
+  files: [internal/snapshot/config.go, internal/snapshot/policy.go, internal/snapshot/scheduler.go]
+  anchor: 'raw map\[string\]string'
+  expect:
+    review: { category: "🔴", fix: "Name the Container", skeptic: "either verdict; REFUTED must carry the cheaper alternative" }
+
 - id: R1.Q1.settings-blob
   rule: R1
   questions: [Q1]
@@ -420,6 +436,16 @@
   anchor: '"application/json"'
   expect:
     lint: { linter: goconst, action: FIX, note: "not enum-shaped: a plain const is the right fix" }
+
+- id: CTRL.R1.error-payload-map
+  rule: R1
+  control: true
+  files: [internal/handlers/heartbeat.go]
+  anchor: 'map\[string\]string\{"error"'
+  # A flat map literal built and written at one call site is data egress at the
+  # boundary, not a hidden type: a telling shape in one function needs no name.
+  symbol: '(?i)\b(error ?(payload|body|response|message)) (type|struct)\b|Name the Container[^\n]{0,80}"error"'
+  expect: { review: { findings: 0, note: "the one-shot error payload must not get a type" } }
 
 - id: CTRL.R1.tenant-type
   rule: R1

@@ -23,7 +23,7 @@ Python suite `../ai-coding-rules/python-linter-driven-development`.
     Taskfile.yaml        build · test · lint · docs:check · includes go: and py:
     runner/              ldd-eval, the language-neutral runner (Go)
     go/                  the Go suite: go-mini, manifest, cases, scaffold, postcheck
-    py/                  the Python suite: py-mini, the same 153 ids with Python anchors, cases, scaffold, postcheck
+    py/                  the Python suite: py-mini, the same 156 ids with Python anchors, cases, scaffold, postcheck
     baselines/           committed reference runs: <lang>-<plugin version>-<plugin sha>/
     results/             ignored; where runs land until one is promoted to baselines/
     scripts/             promote-baseline.sh, check-docs.sh
