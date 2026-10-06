@@ -169,10 +169,12 @@ func TestRegex_Grade_Trace(t *testing.T) {
 func TestRegex_Grade_Files(t *testing.T) {
 	t.Parallel()
 	dir := writeTree(t, map[string]string{
-		"a.go":             "package x\n\nfunc A() {}\n// TODO: later\n",
-		"sub/b.go":         "package sub\n// TODO one\n// TODO two\n",
-		".git/description": "TODO inside git must be skipped\n",
-		"README.md":        "no markers\n",
+		"a.go":                          "package x\n\nfunc A() {}\n// TODO: later\n",
+		"sub/b.go":                      "package sub\n// TODO one\n// TODO two\n",
+		".git/description":              "TODO inside git must be skipped\n",
+		"node_modules/dep/index.js":     "// TODO inside an installed dependency must be skipped\n",
+		"sub/node_modules/dep/index.js": "// TODO at any depth\n",
+		"README.md":                     "no markers\n",
 	})
 	cases := []struct {
 		name   string

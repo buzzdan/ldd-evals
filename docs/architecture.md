@@ -23,7 +23,7 @@ keeps a plugin clone at about 2 MB.
   plugin commit and version the run measured. A local run records the plugin
   checkout's HEAD; CI checks out the plugin repository at a given ref first.
 - **The copy.** The built-in `claude plugin eval` gate expects cases below the
-  plugin directory. The `go:cases` and `py:cases` tasks copy their suite into
+  plugin directory. The `go:cases`, `py:cases` and `ts-react:cases` tasks copy their suite into
   `<plugin>/evals/`, a path the plugin repository ignores, so nothing is
   committed or shipped there. The copy is also where the plugin's command
   prefix is written: each suite's prompts, graders, postchecks and scaffolds
@@ -32,7 +32,10 @@ keeps a plugin clone at about 2 MB.
   read from the plugin's own `commands/` directory unless given on the command
   line — so the same Go cases measure `go-linter-driven-development` (`go-ldd`)
   and the generic `linter-driven-development` (`ldd`), and the same Python
-  cases measure the Python plugin (`py-ldd`) and the generic one. The copied
+  cases measure the Python plugin (`py-ldd`) and the generic one; the TypeScript +
+  React suite's prefix is `tsr-ldd`, and its eight neutral cases carry no token at
+  all so the hand-written 1.x plugin can answer them (the old-vs-new comparison
+  in `ts-react/cases/NEUTRAL.md`). The copied
   suite stays concrete, which is what the gate and the runner read.
 - **The hand-off.** The plugin repository's `scripts/evals.sh` clones this
   repository into an ignored `.evals/` directory and calls `task go:run` with
@@ -45,15 +48,18 @@ keeps a plugin clone at about 2 MB.
   baseline task, and `plugin.json` in the baseline records the plugin either way.
 - **Manifest ids.** `<lang>/violations.yaml` lists the planted violations and
   controls. The same id set appears in every language with language-specific
-  anchors: `py/violations.yaml` carries go-mini's 156 ids over py-mini, and a
-  comment on an entry says where the disease had to change with the language.
+  anchors: `py/violations.yaml` carries go-mini's 156 ids over py-mini, and
+  `ts-react/violations.yaml` carries them over ts-react-mini with a block of
+  React-only ids appended; a comment on an entry says where the disease had to
+  change with the language.
 - **Suite defaults.** A suite's `cases/suite.yaml` names the source and test
   globs the runner's directory focus filters with; the Go suite names none and
-  keeps the runner's Go default.
+  keeps the runner's Go default, the Python suite names `*.py` and `test_*.py`,
+  the TypeScript + React suite `*.ts*` and `*.test.ts*`.
 
 ## A run
 
-`task <lang>:run TIER=<tier> CAP=<usd> PLUGIN=<plugin dir>` (`go:run`, `py:run`)
+`task <lang>:run TIER=<tier> CAP=<usd> PLUGIN=<plugin dir>` (`go:run`, `py:run`, `ts-react:run`)
 builds the runner, copies the suite below the plugin, and runs `ldd-eval run`
 with the model pinned and the cost cap set. Results land in
 `results/<lang>-<timestamp>/<tier>/` with one `result.json` and `trace.jsonl`
@@ -64,7 +70,7 @@ per case run and one `aggregate-result.json` per tier.
 `task <lang>:baseline OUT=<run dir> PLUGIN=<plugin dir>` promotes a run: it
 copies the verdicts, archives every trace into one `traces.tar.zst`, and writes
 a README stub with the pass-rate table pre-filled (`go-…` for the Go suite,
-`python-…` for the Python one). `task <lang>:regrade OUT=<baseline> TIER=<tier>`
+`python-…` for the Python one, `ts-react-…` for the TypeScript + React one). `task <lang>:regrade OUT=<baseline> TIER=<tier>`
 re-applies the current graders to the recorded traces after the archive is
 unpacked beside the verdicts. Graders that read the scaffold tree
 report "needs the kept scaffold" from a clone, because scaffolds are not

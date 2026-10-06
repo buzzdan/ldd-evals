@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Documentation conformance for this repository: runs the Go plugin's repo-brain
-# gate over the repository and drops the lines about the fixtures (go-mini and
-# py-mini), whose documentation violations are planted on purpose (they are
+# gate over the repository and drops the lines about the fixtures (go-mini,
+# py-mini and ts-react-mini), whose documentation violations are planted on purpose (they are
 # what the evals measure). Anything that remains is a real violation in this
 # repository's docs.
 #
@@ -14,7 +14,7 @@ plugin="${1:-$root/../ai-coding-rules/go-linter-driven-development}"
 shift $(( $# > 0 ? 1 : 0 ))
 gate="$plugin/scripts/check-repo-brain.sh"
 [[ -f "$gate" ]] || { echo "check-docs: gate not found at $gate (pass the plugin dir)"; exit 2; }
-fixture_re='(go|py)/fixture/'
+fixture_re='(go|py|ts-react)/fixture/'
 out=$(cd "$root" && bash "$gate" "$@" . 2>&1)
 status=$?
 real=$(printf '%s\n' "$out" | grep -E '^\s*\[Q[0-9]+\]' | grep -vE "$fixture_re" || true)
