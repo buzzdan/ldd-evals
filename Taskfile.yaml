@@ -5,6 +5,8 @@ includes:
     taskfile: go/Taskfile.yaml
   py:
     taskfile: py/Taskfile.yaml
+  ts-react:
+    taskfile: ts-react/Taskfile.yaml
 
 vars:
   # Path to the plugin directory a run measures. Each suite's Taskfile defaults
