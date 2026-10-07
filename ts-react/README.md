@@ -120,6 +120,9 @@ old-vs-new A/B against the hand-written 1.x plugin, run with `TIER=neutral`;
 
 ## Baselines
 
-None yet. The first run is the generated plugin over ts-react-mini; its README
-will carry the parity report, per rule, of recall on ts-react-mini against
-recall on go-mini and py-mini, and the neutral A/B against the 1.x plugin.
+- [`baselines/ts-react-2.0.0-b64f8a8/`](../baselines/ts-react-2.0.0-b64f8a8/README.md)
+  — the generated 2.0.0 plugin over ts-react-mini, cheap tier, 37 runs: pass rate
+  0.78, whole-repository recall 263 of 270 with every control held, read against the
+  neutral A/B with the hand-written 1.2.0 plugin. Its README carries the per-rule
+  recall report, the cluster-header and coverage notes, and the weaknesses to take to
+  core and to the fixture.

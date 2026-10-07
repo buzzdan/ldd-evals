@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'travels? together|data clump|clump'
+pattern: 'travels? (together|unchanged|with)|data clump|clump'
 flags: i
 match: contains
 target: last_message
