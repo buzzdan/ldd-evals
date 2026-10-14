@@ -6,10 +6,13 @@ import { fetchDevices } from '../services/devicesApi'
 import { type Device } from '../types/device'
 
 /** The fleet, healthiest first, refreshed every pollMs. */
-export function useDevices(pollMs?: number): UseQueryResult<Device[]> {
+export function useDevices(
+  pollMs?: number,
+  headers?: Readonly<Record<string, string>>
+): UseQueryResult<Device[]> {
   return useQuery({
     queryKey: ['devices'],
-    queryFn: ({ signal }) => fetchDevices(apiClient, signal),
+    queryFn: ({ signal }) => fetchDevices(apiClient, signal, headers),
     refetchInterval: pollMs,
     select: (devices) =>
       // eslint-disable-next-line sonarjs/no-misleading-array-reverse -- TODO

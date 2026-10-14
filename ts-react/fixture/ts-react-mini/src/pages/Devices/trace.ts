@@ -1,10 +1,7 @@
 /**
- * Attaches the operator's trace id to a request's headers.
- *
- * The id is echoed by the service on every response it produces for the
- * request, so a device's log lines and the request that produced them can be
- * joined later. It is opaque to the dashboard: nothing here parses or checks
- * it, so it stays a string.
+ * Attaches the operator's trace id to the request headers. The service echoes
+ * it on every response, so log lines and their request can be joined later.
+ * The id is opaque to the dashboard, so it stays a plain string.
  */
 export function withTrace(
   headers: Record<string, string>,
