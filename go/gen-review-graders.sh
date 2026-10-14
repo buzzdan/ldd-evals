@@ -11,6 +11,11 @@
 #                      `recall_match: '<ERE>'` to replace the basename pattern
 #                      of its file set when reports name the plant another way
 #                      (by its symbol, say).
+#                      An entry may instead carry `recall_own: '<ERE>'`: it
+#                      then leaves its file set's grader and gets a grader of
+#                      its own with that pattern, for a plant whose file name
+#                      alone cannot prove it was found (a god file, named in
+#                      every report for other reasons).
 #   cluster-<slug>.md  one per distinct expect.review.cluster anchor: a
 #                      cluster entry naming that anchor must appear. The default
 #                      pattern accepts the anchor — or, for a dotted anchor such
@@ -57,11 +62,11 @@ find "$out" -maxdepth 1 -type f \( -name 'recall-*.md' -o -name 'cluster-*.md' -
 
 # One record per entry, fields joined by the ASCII unit separator (\x1f) — a
 # non-whitespace IFS keeps empty fields in place, where tabs would collapse:
-#   id  control  basenames(space-sep)  has_review  cluster  symbol  mention_ok  cluster_match  recall_match  precision_mode  rule
+#   id  control  basenames(space-sep)  has_review  cluster  symbol  mention_ok  cluster_match  recall_match  precision_mode  rule  recall_own
 records=$(awk '
   function flush() {
-    if (id != "") printf "%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\n", id, control, files, review, cluster, symbol, mok, cmatch, rmatch, pmode, rule
-    id = ""; control = "false"; files = ""; review = "0"; cluster = ""; symbol = ""; mok = "false"; cmatch = ""; rmatch = ""; pmode = "mention"; rule = ""
+    if (id != "") printf "%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\n", id, control, files, review, cluster, symbol, mok, cmatch, rmatch, pmode, rule, rown
+    id = ""; control = "false"; files = ""; review = "0"; cluster = ""; symbol = ""; mok = "false"; cmatch = ""; rmatch = ""; pmode = "mention"; rule = ""; rown = ""
   }
   /^- id:[[:space:]]*/ { flush(); id = $0; sub(/^- id:[[:space:]]*/, "", id); sub(/[[:space:]].*$/, "", id); next }
   id == "" { next }
@@ -84,6 +89,9 @@ records=$(awk '
   /^[[:space:]]+recall_match:[[:space:]]*'\''/ {
     rmatch = $0; sub(/^[[:space:]]+recall_match:[[:space:]]*'\''/, "", rmatch); sub(/'\''[[:space:]]*(#.*)?$/, "", rmatch); next
   }
+  /^[[:space:]]+recall_own:[[:space:]]*'\''/ {
+    rown = $0; sub(/^[[:space:]]+recall_own:[[:space:]]*'\''/, "", rown); sub(/'\''[[:space:]]*(#.*)?$/, "", rown); next
+  }
   /^[[:space:]]+review:/ || /^[[:space:]]+expect:[[:space:]]*\{[[:space:]]*review/ {
     review = "1"
     if (match($0, /cluster: "[^"]+"/)) { cluster = substr($0, RSTART + 10, RLENGTH - 11) }
@@ -101,7 +109,7 @@ declare -A recall_ids recall_first recall_match
 declare -A clusters cluster_match
 n_recall=0 n_cluster=0 n_precision=0 missing_symbol=0
 
-while IFS=$'\x1f' read -r id control files review cluster symbol mok cmatch rmatch pmode rule; do
+while IFS=$'\x1f' read -r id control files review cluster symbol mok cmatch rmatch pmode rule rown; do
   [[ -n "$id" ]] || continue
   if [[ "$control" == "true" ]]; then
     [[ "$mok" == "true" ]] && continue
@@ -139,6 +147,20 @@ EOF
     continue
   fi
   [[ "$review" == "1" ]] || continue
+  if [[ -n "$rown" ]]; then
+    cat > "$out/recall-$id.md" <<EOF
+---
+# recall: the report names this plant the way its recall_own names it.
+# ids: $id
+type: regex
+pattern: '$rown'
+match: contains
+target: last_message
+---
+EOF
+    n_recall=$((n_recall + 1))
+    continue
+  fi
   pat=""
   for b in $files; do
     pat="${pat}${pat:+|}$(escape_re "$b")"
