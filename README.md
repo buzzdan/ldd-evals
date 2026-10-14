@@ -64,3 +64,7 @@ ignored `results/` directory.
 How the evals work is documented in the plugin repository, starting at
 [docs/index.md](https://github.com/buzzdan/ai-coding-rules/blob/main/docs/index.md).
 This repository's own docs start at [docs/index.md](docs/index.md).
+
+## License
+
+Apache-2.0, copyright WekaIO Ltd. See [LICENSE](LICENSE).
