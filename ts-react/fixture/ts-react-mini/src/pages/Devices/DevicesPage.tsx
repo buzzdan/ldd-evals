@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { DeviceTable } from '../../components/DeviceTable/DeviceTable'
 import { RequireWrite } from '../../components/RequireWrite/RequireWrite'
@@ -9,6 +10,7 @@ import { DeviceForm } from './DeviceForm'
 import styles from './DevicesPage.module.scss'
 import { type Node } from './placement/picker'
 import { PlacementDialog } from './PlacementDialog'
+import { traceFromSearch, withTrace } from './trace'
 import { useTableFilters } from './useTableFilters'
 
 // The storage nodes replicas can land on; the placement service will own this list.
@@ -22,7 +24,8 @@ const NODES: readonly Node[] = [
 /** The fleet table with its URL-driven filters, the registration form and the placement dialog. */
 export function DevicesPage() {
   const filters = useTableFilters()
-  const devices = useDevices(CONFIG.pollMs)
+  const [params] = useSearchParams()
+  const devices = useDevices(CONFIG.pollMs, withTrace({}, traceFromSearch(params)))
   const [placing, setPlacing] = useState<Device>()
 
   const rows = (devices.data ?? []).filter(
