@@ -51,6 +51,10 @@
 #   recall_match: '<ERE>'   replaces the generated recall grader's basename
 #                       pattern for the plant's file set when reports name
 #                       the plant another way (CONFIG for env.ts).
+#   recall_own: '<ERE>'     takes the plant out of its file set's recall grader
+#                       and gives it a grader of its own with this pattern,
+#                       for a plant its file name alone cannot prove found (a
+#                       god file is named in every report for other reasons).
 #
 # Line-oriented on purpose: `files:` is a one-line flow list, `anchor:` is one
 # single-quoted line, and the parsers only read id / rule / control / files /
@@ -763,6 +767,7 @@
   questions: [Q1]
   files: [src/pages/Heartbeats/heartbeatFeed.ts]
   anchor: '^export class FeedStore \{'
+  recall_own: 'heartbeatFeed\.ts[^\n]*(?i:[78][0-9]{2}[ -]?(lines?|loc)\b|max-lines|god[ -]file)'
   expect:
     review: { category: "🔴", fix: "Rename layer files by role during the move", note: "the longest module in the tree: the store, the pipeline, two parsers and the audit log" }
     lint:   { linter: sonarjs/max-lines, route: R5, note: "silenced by `/* eslint sonarjs/max-lines: \"off\" -- TODO */` on line 1" }
