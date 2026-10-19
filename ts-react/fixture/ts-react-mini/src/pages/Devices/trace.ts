@@ -1,10 +1,7 @@
 /**
- * Attaches the operator's trace id to a request's headers.
- *
- * The id is echoed by the service on every response it produces for the
- * request, so a device's log lines and the request that produced them can be
- * joined later. It is opaque to the dashboard: nothing here parses or checks
- * it, so it stays a string.
+ * Attaches the operator's trace id as the X-Trace header; an empty id adds none.
+ * The service echoes the id on every response, so its log lines can be joined later.
+ * The id is opaque to the dashboard, so it stays a plain string.
  */
 export function withTrace(
   headers: Record<string, string>,
@@ -16,7 +13,7 @@ export function withTrace(
   return { ...headers, 'X-Trace': traceId }
 }
 
-/** Reads the trace id the operator put in the URL, if any. */
+/** Reads the URL's `trace` parameter; '' when the URL has none, which withTrace sends as no header. */
 export function traceFromSearch(search: URLSearchParams): string {
   return search.get('trace') ?? ''
 }

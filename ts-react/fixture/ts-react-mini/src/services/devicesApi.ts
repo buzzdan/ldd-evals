@@ -3,8 +3,12 @@ import { parseDevice, parseDevices } from '../types/typeGuards'
 import { type ApiClient } from './apiClient'
 
 /** Lists every device the fleet knows. */
-export function fetchDevices(client: ApiClient, signal?: AbortSignal): Promise<Device[]> {
-  return client.get('/devices', parseDevices, { signal })
+export function fetchDevices(
+  client: ApiClient,
+  signal?: AbortSignal,
+  headers?: Readonly<Record<string, string>>
+): Promise<Device[]> {
+  return client.get('/devices', parseDevices, { signal, headers })
 }
 
 /** Reads one device by tenant and id. */
