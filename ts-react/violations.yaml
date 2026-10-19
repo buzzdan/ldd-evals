@@ -48,6 +48,9 @@
 #                       last dotted segment on the same line) when reports
 #                       spell the cluster in more than one way.
 # A plant with expect.review may carry:
+#   scoped_review: {…}  in place of review: the plant is judged only by a scoped
+#                       review (a per-leaf question that a whole-repository
+#                       review routes on), so the review-full graders leave it out.
 #   recall_match: '<ERE>'   replaces the generated recall grader's basename
 #                       pattern for the plant's file set when reports name
 #                       the plant another way (CONFIG for env.ts).
@@ -409,6 +412,7 @@
   questions: [Q3]
   files: [src/types/alert.ts, src/types/channel.ts]
   anchor: '^\s+channel: string$|CHANNEL_EMAIL = ''email'''
+  cluster_match: '(?i:\bcluster\b)[^\n]*\b(?i:(Alert\.channel|channel|alert))\b|(?i:\bclusters?\b)[^\n]*(?:\n[^\n]*){0,8}?\n[ \t]*(?:[-*•]|[0-9]+[.)])[ \t]*\**\x60?(?i:(Alert\.channel|channel|alert))\b'
   expect:
     review:   { category: "🔴", cluster: "Alert.channel", fix: "Name enum strings" }
     refactor: { present: 'parse\w*[Cc]hannel\w*\(|^export type Channel = |^export const Channel\b', gone: '^\s+channel: string$', count_max: 0 }
@@ -927,7 +931,7 @@
   anchor: 'trimmed\.length > MAX_LEN'
   recall_match: 'deviceId(\.test)?\.ts'
   expect:
-    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    scoped_review: { category: "🔴", fix: "Kill the surviving mutant" }
     # The table has a 65-char row and no 64-char row; the hand check names the missing one.
 
 - id: R7.Q7.tenant-rune-boundary
@@ -937,7 +941,7 @@
   anchor: 'throw new Error\(''tenant: empty''\)'
   recall_match: 'tenant(\.test)?\.ts'
   expect:
-    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    scoped_review: { category: "🔴", fix: "Kill the surviving mutant" }
     postcheck: { lived_max: 0, package: src/types, note: "the only survivor is the empty-tenant message: `toThrow('tenant')` accepts any message that contains the word, so a `toThrow('tenant: empty')` row kills it" }
 
 - id: R7.Q7.slugify-leading-separator
@@ -947,7 +951,7 @@
   anchor: 'return out\.join\(''''\)\.replace\(/-\$/, ''''\)'
   recall_match: 'strings(\.test)?\.ts'
   expect:
-    review:   { category: "🔴", fix: "Kill the surviving mutant" }
+    scoped_review: { category: "🔴", fix: "Kill the surviving mutant" }
     postcheck: { lived_max: 5, package: src/utils/strings.ts, note: "a trailing-separator row (slugify('eu ') === 'eu') kills the replace mutant; truncate('hb', 1) === 'h' and truncate('hb', 0) === '' kill two more; the rest (n < 0, the three dash-flag literals) are equivalent and may live only if recorded beside the tests" }
 
 - id: CTRL.R7.no-survivors-placement

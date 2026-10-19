@@ -120,6 +120,10 @@ old-vs-new A/B against the hand-written 1.x plugin, run with `TIER=neutral`;
 
 ## Baselines
 
+- [`baselines/ts-react-2.1.0-4077431/`](../baselines/ts-react-2.1.0-4077431/README.md)
+  — the 2.1.0 plugin over ts-react-mini, cheap tier, 39 runs: pass rate 0.74; case A
+  and case D pass 2/2; `review-full` passes 116 to 120 of 128 graders, with a
+  coverage loss its README names three suspects for.
 - [`baselines/ts-react-2.0.0-b64f8a8/`](../baselines/ts-react-2.0.0-b64f8a8/README.md)
   — the generated 2.0.0 plugin over ts-react-mini, cheap tier, 37 runs: pass rate
   0.78, whole-repository recall 263 of 270 with every control held, read against the
